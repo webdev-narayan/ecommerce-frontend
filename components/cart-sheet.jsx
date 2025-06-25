@@ -65,7 +65,7 @@ export function CartSheet() {
                     <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
                       <div className="relative w-16 h-16 flex-shrink-0">
                         <Image
-                          src={item.image || "/placeholder.svg"}
+                          src={isValidImageUrl(item.image) ? item.image : "/placeholder.svg"}
                           alt={item.name}
                           fill
                           className="object-cover rounded-md"
@@ -153,4 +153,8 @@ export function CartSheet() {
       </SheetContent>
     </Sheet>
   )
+}
+
+function isValidImageUrl(url) {
+  return typeof url === "string" && url.trim() !== "" && url.startsWith("/")
 }

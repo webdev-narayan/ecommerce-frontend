@@ -276,7 +276,7 @@ export default function CheckoutPage() {
                     <div key={item.id} className="flex items-center space-x-3">
                       <div className="relative w-12 h-12 flex-shrink-0">
                         <Image
-                          src={item.image || "/placeholder.svg"}
+                          src={"/placeholder.svg"}
                           alt={item.name}
                           fill
                           className="object-cover rounded-md"
