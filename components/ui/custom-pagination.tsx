@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 import { Pagination, PaginationContent, PaginationLink, PaginationNext, PaginationPrevious } from './pagination'
 
-const CustomPagination = ({ setPageSize, setPage, meta }) => {
+const CustomPagination = ({ setPageSize, setPage, meta }: any) => {
     return (
         <div className={"ml-auto flex gap-x-2"}>
-            <Select onValueChange={(value) => setPageSize(value)}>
+            <Select
+                onValueChange={(value) => setPageSize(value)}>
                 <SelectTrigger>
                     <SelectValue placeholder="Page Size" />
                 </SelectTrigger>

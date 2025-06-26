@@ -26,7 +26,6 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import {
     DropdownMenu,
@@ -38,22 +37,24 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {Textarea} from "@/components/ui/textarea"
 import {Category} from "./categories.type"
 import {deleteApi, getApi, postApi, putApi} from "@/lib/api"
-import {redirect} from "next/navigation";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import Link from "next/link";
 import Image from "next/image";
 import {mediaUrlGenerator} from "@/lib/utils";
-import {Badge} from "@/components/ui/badge";
 import CustomPagination from "@/components/ui/custom-pagination";
-import {Product} from "@/app/dashboard/products/product.type";
 import {MetaResponse} from "@/lib/types/type";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([])
@@ -63,16 +64,13 @@ export default function CategoriesPage() {
     const [categoryToAction, setCategoryToAction] = useState<Category | null>(null)
 
     const [searchTerm, setSearchTerm] = useState<string>("")
-    const [selectedProducts, setSelectedProducts] = useState<number[]>([])
-    const [products, setProducts] = useState<Product[]>([])
-    const [isAddProductOpen, setIsAddProductOpen] = useState<boolean>(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
-    const [productToDelete, setProductToDelete] = useState<Product | null>(null)
     const [viewMode, setViewMode] = useState("list")
     const [debouncedSearchedQuery, setDebouncedSearchedQuery] = useState("")
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState(20)
     const [meta, setMeta] = useState<MetaResponse>()
+    const [isMobile, setIsMobile] = useState(false)
 
     // Filter categories based on search term
     const filteredCategories = categories.filter((category) =>
@@ -195,6 +193,17 @@ export default function CategoriesPage() {
         }
     }, [isCategoryFormOpen])
 
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsMobile(window.innerWidth < 768)
+        }
+
+        checkScreenSize()
+        window.addEventListener("resize", checkScreenSize)
+
+        return () => window.removeEventListener("resize", checkScreenSize)
+    }, [])
+
     return (
         <>
             <div className="container mx-auto p-6">
@@ -209,85 +218,77 @@ export default function CategoriesPage() {
                               Add Category
                         </span>
                     </Button>
-                </div>
+                    <Sheet open={isCategoryFormOpen} onOpenChange={setIsCategoryFormOpen}>
+                        <SheetContent side={isMobile ? "bottom" : "right"}
+                                      className={isMobile ? "h-[85vh]" : "w-[400px] sm:w-[540px]"}>
+                            <SheetHeader>
+                                <SheetTitle>Create New Category</SheetTitle>
+                                <SheetDescription>
+                                    Add a new category with a name and description. Click save when you're done.
+                                </SheetDescription>
+                            </SheetHeader>
 
-                <div className="flex items-center gap-2">
-                    <Dialog open={isCategoryFormOpen} onOpenChange={setIsCategoryFormOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4"/>
-                                Add Category
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
-                            <DialogHeader>
-                                <DialogTitle>Add New Category</DialogTitle>
-                                <DialogDescription>Fill in the details to add a new product
-                                    category.</DialogDescription>
-                            </DialogHeader>
-                            <form action={handleSaveCategory}>
-                                <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="name" className="text-right">
-                                            Name
-                                        </Label>
-                                        <Input id="name" className="col-span-3" required/>
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="description" className="text-right">
-                                            Description
-                                        </Label>
-                                        <Textarea id="description" className="col-span-3"/>
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="featured" className="text-right">
-                                            Featured
-                                        </Label>
-                                        <div className="col-span-3 flex items-center space-x-2">
-                                            <Checkbox id="featured"/>
+                            <form action={handleSaveCategory} className="space-y-6 py-6">
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="name">Category Name</Label>
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                    {...(isEditing && categoryToAction &&  {value: categoryToAction.name})}
+                                    placeholder="Enter category name"
+                                    required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                        id="description"
+                                        placeholder="Enter category description"
+                                        name="description"
+                                        rows={4}
+                                        {...(isEditing && categoryToAction &&  {value: categoryToAction.description})}
+                                        className="resize-none"
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="image" className="">
+                                        Image
+                                    </Label>
+                                    <div className="col-span-3">
+                                        <div className="flex items-center justify-center w-full">
                                             <label
-                                                htmlFor="featured"
-                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                htmlFor="dropzone-file"
+                                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
                                             >
-                                                Show this category in featured sections
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <Upload className="w-8 h-8 mb-3 text-gray-500"/>
+                                                    <p className="mb-2 text-sm text-gray-500">
+                                                        <span className="font-semibold">Click to upload</span> or drag
+                                                        and drop
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX.
+                                                        2MB)</p>
+                                                </div>
+                                                <input id="dropzone-file" type="file" className="hidden"/>
                                             </label>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="image" className="text-right">
-                                            Image
-                                        </Label>
-                                        <div className="col-span-3">
-                                            <div className="flex items-center justify-center w-full">
-                                                <label
-                                                    htmlFor="dropzone-file"
-                                                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-                                                >
-                                                    <div
-                                                        className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                        <Upload className="w-8 h-8 mb-3 text-gray-500"/>
-                                                        <p className="mb-2 text-sm text-gray-500">
-                                                            <span className="font-semibold">Click to upload</span> or
-                                                            drag and drop
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX.
-                                                            2MB)</p>
-                                                    </div>
-                                                    <input id="dropzone-file" type="file" className="hidden"/>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
-                                <DialogFooter>
-                                    <Button type="button" variant="outline" onClick={() => setIsCategoryFormOpen(false)}>
+
+                                <SheetFooter className="flex flex-col sm:flex-row gap-2">
+                                    <Button type="button" variant="outline" onClick={() => setIsCategoryFormOpen(false)}
+                                            className="w-full sm:w-auto">
                                         Cancel
                                     </Button>
-                                    <Button type="submit">Save Category</Button>
-                                </DialogFooter>
+                                    <Button type="submit" className="w-full sm:w-auto">
+                                        Create Category
+                                    </Button>
+                                </SheetFooter>
                             </form>
-                        </DialogContent>
-                    </Dialog>
+                        </SheetContent>
+                    </Sheet>
                 </div>
 
                 <Tabs value={viewMode} onValueChange={setViewMode} className="w-full">

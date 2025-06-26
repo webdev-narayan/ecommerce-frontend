@@ -1,5 +1,6 @@
 import { Media } from "@/lib/types/type";
-import {Category} from "@/app/dashboard/categories/categories.type";
+import { Category } from "@/app/dashboard/categories/categories.type";
+import { VariantOption } from "./attributes/attribute.type";
 
 export interface Product {
     id: number;
@@ -26,21 +27,11 @@ export interface ProductVariant {
     quantity: number;
     thumbnail?: Media;
     gallery?: Media[];
-    variant_options?: VariantOption
+    variant_options?: VariantOption[]
 }
 
-export interface VariantOption {
+export interface Gender {
     id: number;
     documentId: string;
-    name: string;
-    property: string;
-    variant_attribute: VariantAttribute
-}
-
-export interface VariantAttribute {
-    id: number;
-    documentId: string;
-    name: string;
-    property: string;
-    variant_options: VariantOption[]
+    name: string
 }

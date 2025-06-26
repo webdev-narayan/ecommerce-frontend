@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { getHeaders } from "@/lib/auth";
-export  const  mediaBaseUrl = "http://localhost:1337"
+import { Media } from "./types/type";
+export const mediaBaseUrl = "http://localhost:1337"
 export const baseURL = "http://localhost:1337/api";
 // export const baseURL = "https://api.sarvraj.com/api";
 // Create axios instance
@@ -82,5 +84,37 @@ export async function deleteApi<T>(
         return { success: true, data: response.data };
     } catch (error) {
         return { success: false, error };
+    }
+}
+
+// UPLOAD
+
+export async function uploadToStrapi(files: File | File[]): Promise<Media[] | undefined> {
+    console.log(files)
+    console.log("inside upload to strapi")
+    const formData = new FormData();
+
+    if (Array.isArray(files)) {
+        files.forEach((file) => {
+            formData.append('files', file);
+        });
+    } else {
+        formData.append('files', files);
+    }
+
+    try {
+        const config = await getHeaders({ token: true })
+
+        const response = await axios.post(`${baseURL}/upload`, formData, {
+            headers: {
+                "Authorization": config.headers?.Authorization
+            }
+        });
+        if (response.data) {
+            return response.data; // Array of uploaded file objects
+        }
+    } catch (err) {
+        console.error('File upload failed:', err);
+        throw err;
     }
 }
