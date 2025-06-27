@@ -90,8 +90,8 @@ export async function deleteApi<T>(
 // UPLOAD
 
 export async function uploadToStrapi(files: File | File[]): Promise<Media[] | undefined> {
-    console.log(files)
-    console.log("inside upload to strapi")
+    // console.log(files)
+    // console.log("inside upload to strapi")
     const formData = new FormData();
 
     if (Array.isArray(files)) {

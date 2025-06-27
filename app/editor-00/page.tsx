@@ -5,7 +5,6 @@ import { useState } from "react"
 import { SerializedEditorState } from "lexical"
 
 import { Editor } from "@/components/blocks/editor-00/editor"
-import { $convertToMarkdownString } from "@lexical/markdown"
 
 export const initialValue = {
   root: {
@@ -39,10 +38,9 @@ export const initialValue = {
 
 export default function EditorPage() {
   const [editorState, setEditorState] = useState<SerializedEditorState>(initialValue)
-
   return (
     <Editor
-      onChange={(editorState) => console.log(editorState.toJSON())}
+      onChange={() => { }}
       editorSerializedState={editorState}
       onSerializedChange={(value) => setEditorState(value)}
     />
