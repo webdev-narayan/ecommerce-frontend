@@ -3,55 +3,26 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import {
-    Edit,
-    Grid,
-    List, LucideEye,
-    MoreHorizontal, Package,
-    Plus,
-    Search,
-    Trash, Trash2,
-    Upload, X,
-} from "lucide-react"
+import { Edit, Grid, List, LucideEye, MoreHorizontal, Package, Plus, Search, Trash, Trash2, X, } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { deleteApi, getApi, postApi, putApi } from "@/lib/api"
+import { deleteApi, getApi, postApi, putApi, uploadToStrapi } from "@/lib/api"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import { mediaUrlGenerator } from "@/lib/utils";
 import CustomPagination from "@/components/ui/custom-pagination";
 import { MetaResponse } from "@/lib/types/type";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, } from "@/components/ui/sheet"
 import { Brand } from "./brand.type"
+import FileUpload from "@/components/ui/file-upload"
 
 export default function BrandsPage() {
     const [brands, setBrands] = useState<Brand[]>([])
@@ -59,7 +30,7 @@ export default function BrandsPage() {
     const [isBrandFormOpen, setIsBrandFormOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [brandToAction, setBrandToAction] = useState<Brand | null>(null)
-
+    const [thumbnail, setThumbnail] = useState<File[] | null>(null)
     const [searchTerm, setSearchTerm] = useState<string>("")
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
     const [viewMode, setViewMode] = useState("list")
@@ -134,14 +105,22 @@ export default function BrandsPage() {
 
     const handleSaveBrand = async (formData: FormData) => {
         const name = formData.get("name") as string
-        const description = formData.get("description") as string
+        const payload: {
+            name: string
+            thumbnail?: number
+        } = {
+            name,
+        }
+        if (thumbnail) {
+            const res = await uploadToStrapi(thumbnail)
+            if (res) {
+                payload["thumbnail"] = res[0].id
+            }
+        }
 
         if (isEditing && brandToAction) {
             const res = await putApi<{ data: Brand }>(`/brands/${brandToAction.documentId}`, {
-                data: {
-                    name,
-                    description
-                }
+                data: payload
             }, true)
             if (res.success && res.data) {
                 toast.success("Brand added successfully")
@@ -156,7 +135,7 @@ export default function BrandsPage() {
             }
 
         } else {
-            const res = await postApi<{ data: Brand }>("/brands", { data: { name, description } }, true)
+            const res = await postApi<{ data: Brand }>("/brands", { data: payload }, true)
             if (res.success && res.data) {
                 toast.success("Brand added successfully")
                 setBrands([...brands, res.data.data])
@@ -233,28 +212,13 @@ export default function BrandsPage() {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label htmlFor="image" className="">
-                                        Image
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <div className="flex items-center justify-center w-full">
-                                            <label
-                                                htmlFor="dropzone-file"
-                                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-                                            >
-                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                    <Upload className="w-8 h-8 mb-3 text-gray-500" />
-                                                    <p className="mb-2 text-sm text-gray-500">
-                                                        <span className="font-semibold">Click to upload</span> or drag
-                                                        and drop
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX.
-                                                        2MB)</p>
-                                                </div>
-                                                <input id="dropzone-file" type="file" className="hidden" />
-                                            </label>
-                                        </div>
-                                    </div>
+                                    <FileUpload
+                                        title="Upload Thumbnail"
+                                        isMultiple={false}
+                                        acceptedFileTypes={["image/jpeg", "image/png", "image/gif", "image/webp"]}
+                                        maxFileSize={5}
+                                        onFilesChange={(files: File[]) => setThumbnail(files)}
+                                    />
                                 </div>
 
                                 <SheetFooter className="flex flex-col sm:flex-row gap-2">

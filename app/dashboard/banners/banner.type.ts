@@ -4,6 +4,7 @@ export interface Banner {
     id: number
     documentId: string
     title: string
+    link_url: string;
     description: string
     image: Media
     mobile_image: Media

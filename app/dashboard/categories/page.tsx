@@ -1,24 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client"
 
-import {useEffect, useState} from "react"
+import { useEffect, useState } from "react"
 import {
-    ArrowUpDown,
-    ChevronDown,
-    Download,
     Edit,
-    Filter, Grid,
-    LayoutGrid, List, LucideEye,
-    MoreHorizontal, MoreVertical, Package,
+    Grid,
+    List, LucideEye,
+    MoreHorizontal, Package,
     Plus,
     Search,
     Trash, Trash2,
     Upload, X,
 } from "lucide-react"
-import {toast} from "sonner"
+import { toast } from "sonner"
 
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
-import {Checkbox} from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     Dialog,
     DialogContent,
@@ -35,26 +35,19 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {Input} from "@/components/ui/input"
-import {Label} from "@/components/ui/label"
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
-import {Textarea} from "@/components/ui/textarea"
-import {Category} from "./categories.type"
-import {deleteApi, getApi, postApi, putApi} from "@/lib/api"
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import { Category } from "./categories.type"
+import { deleteApi, getApi, postApi, putApi, uploadToStrapi } from "@/lib/api"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
-import {mediaUrlGenerator} from "@/lib/utils";
+import { mediaUrlGenerator } from "@/lib/utils";
 import CustomPagination from "@/components/ui/custom-pagination";
-import {MetaResponse} from "@/lib/types/type";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
+import { MetaResponse } from "@/lib/types/type";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, } from "@/components/ui/sheet"
+import FileUpload from "@/components/ui/file-upload"
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([])
@@ -62,7 +55,7 @@ export default function CategoriesPage() {
     const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [categoryToAction, setCategoryToAction] = useState<Category | null>(null)
-
+    const [thumbnail, setThumbnail] = useState<File[] | null>(null)
     const [searchTerm, setSearchTerm] = useState<string>("")
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
     const [viewMode, setViewMode] = useState("list")
@@ -79,7 +72,7 @@ export default function CategoriesPage() {
     )
 
     async function getCategories() {
-        let query = new URLSearchParams();
+        const query = new URLSearchParams();
 
         query.append("pagination[page]", page.toString());
         query.append("pagination[pageSize]", pageSize.toString());
@@ -143,13 +136,20 @@ export default function CategoriesPage() {
     const handleSaveCategory = async (formData: FormData) => {
         const name = formData.get("name") as string
         const description = formData.get("description") as string
+        const payload: any = {
+            name,
+            description,
+        }
+        if (thumbnail) {
+            const res = await uploadToStrapi(thumbnail)
+            if (res) {
+                payload["thumbnail"] = res[0].id
+            }
+        }
 
         if (isEditing && categoryToAction) {
             const res = await putApi<{ data: Category }>(`/categories/${categoryToAction.documentId}`, {
-                data: {
-                    name,
-                    description
-                }
+                data: payload
             }, true)
             if (res.success && res.data) {
                 toast.success("Category added successfully")
@@ -164,7 +164,7 @@ export default function CategoriesPage() {
             }
 
         } else {
-            const res = await postApi<{ data: Category }>("/categories", {data: {name, description}}, true)
+            const res = await postApi<{ data: Category }>("/categories", { data: payload }, true)
             if (res.success && res.data) {
                 toast.success("Category added successfully")
                 setCategories([...categories, res.data.data])
@@ -213,18 +213,18 @@ export default function CategoriesPage() {
                         // onClick={() => redirect("/dashboard/products/create")}
                         onClick={() => setIsCategoryFormOpen(true)}
                     >
-                        <Plus className="mr-2 h-4 w-4"/>
+                        <Plus className="mr-2 h-4 w-4" />
                         <span className={"hidden md:inline"}>
-                              Add Category
+                            Add Category
                         </span>
                     </Button>
                     <Sheet open={isCategoryFormOpen} onOpenChange={setIsCategoryFormOpen}>
                         <SheetContent side={isMobile ? "bottom" : "right"}
-                                      className={isMobile ? "h-[85vh]" : "w-[400px] sm:w-[540px]"}>
+                            className={isMobile ? "h-[85vh]" : "w-[400px] sm:w-[540px]"}>
                             <SheetHeader>
                                 <SheetTitle>Create New Category</SheetTitle>
                                 <SheetDescription>
-                                    Add a new category with a name and description. Click save when you're done.
+                                    Add a new category with a name and description. Click save when you are done.
                                 </SheetDescription>
                             </SheetHeader>
 
@@ -234,9 +234,9 @@ export default function CategoriesPage() {
                                     <Input
                                         id="name"
                                         name="name"
-                                    {...(isEditing && categoryToAction &&  {value: categoryToAction.name})}
-                                    placeholder="Enter category name"
-                                    required
+                                        {...(isEditing && categoryToAction && { value: categoryToAction.name })}
+                                        placeholder="Enter category name"
+                                        required
                                     />
                                 </div>
 
@@ -247,39 +247,22 @@ export default function CategoriesPage() {
                                         placeholder="Enter category description"
                                         name="description"
                                         rows={4}
-                                        {...(isEditing && categoryToAction &&  {value: categoryToAction.description})}
+                                        {...(isEditing && categoryToAction && { value: categoryToAction.description })}
                                         className="resize-none"
                                     />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label htmlFor="image" className="">
-                                        Image
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <div className="flex items-center justify-center w-full">
-                                            <label
-                                                htmlFor="dropzone-file"
-                                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-                                            >
-                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                    <Upload className="w-8 h-8 mb-3 text-gray-500"/>
-                                                    <p className="mb-2 text-sm text-gray-500">
-                                                        <span className="font-semibold">Click to upload</span> or drag
-                                                        and drop
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX.
-                                                        2MB)</p>
-                                                </div>
-                                                <input id="dropzone-file" type="file" className="hidden"/>
-                                            </label>
-                                        </div>
-                                    </div>
+                                    <FileUpload
+                                        title="Upload Thumbnail"
+                                        isMultiple={false}
+                                        onFilesChange={(value: File[]) => setThumbnail(value)}
+                                    />
                                 </div>
 
                                 <SheetFooter className="flex flex-col sm:flex-row gap-2">
                                     <Button type="button" variant="outline" onClick={() => setIsCategoryFormOpen(false)}
-                                            className="w-full sm:w-auto">
+                                        className="w-full sm:w-auto">
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="w-full sm:w-auto">
@@ -295,7 +278,7 @@ export default function CategoriesPage() {
                     <div className="flex justify-between md:flex-row flex-col mb-6">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div className="relative w-full md:w-64">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground"/>
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search categories..."
                                     className="pl-8"
@@ -308,7 +291,7 @@ export default function CategoriesPage() {
                                         className="absolute right-0 top-0 h-full aspect-square rounded-l-none"
                                         onClick={() => setSearchTerm("")}
                                     >
-                                        <X className="h-4 w-4"/>
+                                        <X className="h-4 w-4" />
                                     </Button>
                                 )}
                             </div>
@@ -316,11 +299,11 @@ export default function CategoriesPage() {
 
                         <TabsList className="grid w-[200px] grid-cols-2">
                             <TabsTrigger value="list">
-                                <List className="h-4 w-4 mr-2"/>
+                                <List className="h-4 w-4 mr-2" />
                                 List
                             </TabsTrigger>
                             <TabsTrigger value="grid">
-                                <Grid className="h-4 w-4 mr-2"/>
+                                <Grid className="h-4 w-4 mr-2" />
                                 Grid
                             </TabsTrigger>
                         </TabsList>
@@ -361,7 +344,7 @@ export default function CategoriesPage() {
                                             <TableRow>
                                                 <TableCell colSpan={7} className="text-center py-8">
                                                     <div className="flex flex-col items-center justify-center">
-                                                        <Package className="h-12 w-12 text-gray-300 mb-2"/>
+                                                        <Package className="h-12 w-12 text-gray-300 mb-2" />
                                                         <h3 className="text-lg font-medium">No products found</h3>
                                                         <p className="text-sm text-gray-500 mb-4">
                                                             {searchTerm ? "Try a different search term" : "Add a product to get started"}
@@ -392,7 +375,7 @@ export default function CategoriesPage() {
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
                                                                 <Button variant="ghost" size="icon">
-                                                                    <MoreHorizontal className="h-4 w-4"/>
+                                                                    <MoreHorizontal className="h-4 w-4" />
                                                                     <span className="sr-only">Actions</span>
                                                                 </Button>
                                                             </DropdownMenuTrigger>
@@ -401,14 +384,14 @@ export default function CategoriesPage() {
                                                                 <DropdownMenuItem
                                                                     onClick={() => handleEditCategory(category)}
                                                                 >
-                                                                    <Edit className="mr-2 h-4 w-4"/>
+                                                                    <Edit className="mr-2 h-4 w-4" />
                                                                     Edit category
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem>View products</DropdownMenuItem>
-                                                                <DropdownMenuSeparator/>
+                                                                <DropdownMenuSeparator />
                                                                 <DropdownMenuItem className="text-red-600"
-                                                                                  onClick={() => handleDeleteCategory(category)}>
-                                                                    <Trash className="mr-2 h-4 w-4"/>
+                                                                    onClick={() => handleDeleteCategory(category)}>
+                                                                    <Trash className="mr-2 h-4 w-4" />
                                                                     Delete category
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
@@ -426,104 +409,104 @@ export default function CategoriesPage() {
                     <TabsContent value="grid" className="mt-0">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
                             {categories.length > 0 ? categories.map((category: Category) => (
-                                    <Card
-                                        key={category.id}
-                                        className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
-                                    >
-                                        <CardHeader className="p-0">
-                                            <div className="relative aspect-square overflow-hidden bg-gray-100">
-                                                <Image
-                                                    src={mediaUrlGenerator(category?.thumbnail?.url)}
-                                                    alt={category.name}
-                                                    fill
-                                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                                />
-                                                <div className="absolute top-3 right-3">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className={"h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"}
-                                                            >
-                                                                <MoreHorizontal className="h-4 w-4 "/>
-                                                                <span className="sr-only">Actions</span>
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleEditCategory(category)}
-                                                            >
-                                                                <Edit className="mr-2 h-4 w-4"/>
-                                                                Edit category
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem>
-                                                                <LucideEye className="mr-2 h-4 w-4"/>
-                                                                View products
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator/>
-                                                            <DropdownMenuItem className="text-red-600"
-                                                                              onClick={() => handleDeleteCategory(category)}>
-                                                                <Trash className="mr-2 h-4 w-4"/>
-                                                                Delete category
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
+                                <Card
+                                    key={category.id}
+                                    className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+                                >
+                                    <CardHeader className="p-0">
+                                        <div className="relative aspect-square overflow-hidden bg-gray-100">
+                                            <Image
+                                                src={mediaUrlGenerator(category?.thumbnail?.url)}
+                                                alt={category.name}
+                                                fill
+                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                            />
+                                            <div className="absolute top-3 right-3">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className={"h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"}
+                                                        >
+                                                            <MoreHorizontal className="h-4 w-4 " />
+                                                            <span className="sr-only">Actions</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleEditCategory(category)}
+                                                        >
+                                                            <Edit className="mr-2 h-4 w-4" />
+                                                            Edit category
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            <LucideEye className="mr-2 h-4 w-4" />
+                                                            View products
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-red-600"
+                                                            onClick={() => handleDeleteCategory(category)}>
+                                                            <Trash className="mr-2 h-4 w-4" />
+                                                            Delete category
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
-                                        </CardHeader>
+                                        </div>
+                                    </CardHeader>
 
-                                        <CardContent className="p-4">
-                                            <div className="space-y-2">
-                                                <div className="flex items-start justify-between">
-                                                    <h3 className="font-semibold text-gray-900 line-clamp-1">{category.name}</h3>
-                                                </div>
-                                                {/*<p className="text-sm text-gray-600 line-clamp-2">{category.description}</p>*/}
-                                                <div className="flex items-center justify-between pt-2">
-                                                    <div
-                                                        className="flex justify-between w-full items-center gap-1 text-sm text-gray-500">
-                                                        Products <div
+                                    <CardContent className="p-4">
+                                        <div className="space-y-2">
+                                            <div className="flex items-start justify-between">
+                                                <h3 className="font-semibold text-gray-900 line-clamp-1">{category.name}</h3>
+                                            </div>
+                                            {/*<p className="text-sm text-gray-600 line-clamp-2">{category.description}</p>*/}
+                                            <div className="flex items-center justify-between pt-2">
+                                                <div
+                                                    className="flex justify-between w-full items-center gap-1 text-sm text-gray-500">
+                                                    Products <div
                                                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${category?.productsCount || 0 >= 10
                                                             ? "bg-green-100 text-green-800"
                                                             : category.productsCount || 0 >= 5
                                                                 ? "bg-yellow-100 text-yellow-800"
                                                                 : "bg-red-100 text-red-800"
-                                                        }`}
+                                                            }`}
                                                     >
-                                                        <Package className="h-4 w-4 mr-1"/>
+                                                        <Package className="h-4 w-4 mr-1" />
                                                         <span>{100}</span>
-                                                    </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </CardContent>
+                                        </div>
+                                    </CardContent>
 
-                                        <CardFooter className="p-4 pt-0 flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex-1 bg-white text-gray-700 px-1.5 py-1.5 border-gray-200 hover:bg-gray-50"
-                                            >
-                                                <Edit className="mr-1 h-4 w-4"/>
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteCategory(category)}
-                                                className="flex-1 bg-white px-1.5 py-1.5 text-red-600 border-red-200 hover:bg-red-50"
-                                            >
-                                                <Trash2 className="mr-1 h-4 w-4"/>
-                                                Delete
-                                            </Button>
-                                        </CardFooter>
-                                    </Card>
-                                ))
+                                    <CardFooter className="p-4 pt-0 flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex-1 bg-white text-gray-700 px-1.5 py-1.5 border-gray-200 hover:bg-gray-50"
+                                        >
+                                            <Edit className="mr-1 h-4 w-4" />
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleDeleteCategory(category)}
+                                            className="flex-1 bg-white px-1.5 py-1.5 text-red-600 border-red-200 hover:bg-red-50"
+                                        >
+                                            <Trash2 className="mr-1 h-4 w-4" />
+                                            Delete
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            ))
                                 :
                                 <div
                                     className="flex flex-col items-center justify-center bg-white shadow-sm rounded-md p-8 col-span-full">
-                                    <Package className="h-12 w-12 text-gray-300 mb-2"/>
+                                    <Package className="h-12 w-12 text-gray-300 mb-2" />
                                     <h3 className="text-lg font-medium">No products found</h3>
                                     <p className="text-sm text-gray-500 mb-4">
                                         {searchTerm ? "Try a different search term" : "Add a product to get started"}
@@ -562,7 +545,7 @@ export default function CategoriesPage() {
                             {categoryToAction && (
                                 <div className="flex items-center space-x-4">
                                     <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center">
-                                        <Package className="h-6 w-6 text-gray-500"/>
+                                        <Package className="h-6 w-6 text-gray-500" />
                                     </div>
                                     <div>
                                         <h4 className="font-medium">{categoryToAction.name}</h4>

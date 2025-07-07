@@ -1,13 +1,13 @@
 "use client"
 
-import {useEffect, useState} from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import {Edit, Grid, List, MoreHorizontal, MoreVertical, Package, Plus, Search, Trash2, X,} from "lucide-react"
-import {toast} from "sonner"
+import { Edit, Grid, List, MoreHorizontal, MoreVertical, Package, Plus, Search, Trash2, X, } from "lucide-react"
+import { toast } from "sonner"
 
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardHeader, CardFooter} from "@/components/ui/card"
-import {Checkbox} from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     Dialog,
     DialogContent,
@@ -24,18 +24,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {Input} from "@/components/ui/input"
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
-import {redirect} from "next/navigation"
-import {Tabs, TabsTrigger, TabsList} from '@/components/ui/tabs';
-import {TabsContent} from '@/components/ui/tabs';
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { redirect } from "next/navigation"
+import { Tabs, TabsTrigger, TabsList } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
 import Image from "next/image"
-import {Badge} from '@/components/ui/badge';
-import {getApi} from "@/lib/api"
-import {Product} from './product.type';
-import {mediaUrlGenerator} from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { getApi } from "@/lib/api"
+import { Product } from './product.type';
+import { mediaUrlGenerator } from "@/lib/utils";
 import CustomPagination from "@/components/ui/custom-pagination";
-import {MetaResponse} from "@/lib/types/type";
+import { MetaResponse } from "@/lib/types/type";
 
 export default function ProductsPage() {
     const [searchTerm, setSearchTerm] = useState<string>("")
@@ -126,7 +126,7 @@ export default function ProductsPage() {
                 <Button
                     onClick={() => redirect("/dashboard/products/create")}
                 >
-                    <Plus className="mr-2 h-4 w-4"/> Add Product
+                    <Plus className="mr-2 h-4 w-4" /> Add Product
                 </Button>
             </div>
 
@@ -134,7 +134,7 @@ export default function ProductsPage() {
                 <div className="flex justify-between mb-6">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div className="relative w-full md:w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground"/>
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search products..."
                                 className="pl-8"
@@ -147,7 +147,7 @@ export default function ProductsPage() {
                                     className="absolute right-0 top-0 h-full aspect-square rounded-l-none"
                                     onClick={() => setSearchTerm("")}
                                 >
-                                    <X className="h-4 w-4"/>
+                                    <X className="h-4 w-4" />
                                 </Button>
                             )}
                         </div>
@@ -155,11 +155,11 @@ export default function ProductsPage() {
 
                     <TabsList className="grid w-[200px] grid-cols-2">
                         <TabsTrigger value="list">
-                            <List className="h-4 w-4 mr-2"/>
+                            <List className="h-4 w-4 mr-2" />
                             List
                         </TabsTrigger>
                         <TabsTrigger value="grid">
-                            <Grid className="h-4 w-4 mr-2"/>
+                            <Grid className="h-4 w-4 mr-2" />
                             Grid
                         </TabsTrigger>
                     </TabsList>
@@ -201,7 +201,7 @@ export default function ProductsPage() {
                                         <TableRow>
                                             <TableCell colSpan={7} className="text-center py-8">
                                                 <div className="flex flex-col items-center justify-center">
-                                                    <Package className="h-12 w-12 text-gray-300 mb-2"/>
+                                                    <Package className="h-12 w-12 text-gray-300 mb-2" />
                                                     <h3 className="text-lg font-medium">No products found</h3>
                                                     <p className="text-sm text-gray-500 mb-4">
                                                         {searchTerm ? "Try a different search term" : "Add a product to get started"}
@@ -226,7 +226,7 @@ export default function ProductsPage() {
                                                 <TableCell>
                                                     <div className="font-medium">{product.title}</div>
                                                 </TableCell>
-                                                <TableCell>{product.category.name}</TableCell>
+                                                <TableCell>{product.category?.name}</TableCell>
                                                 <TableCell>₹ {product?.product_variants[0].price}</TableCell>
                                                 <TableCell>
                                                     <div
@@ -235,9 +235,9 @@ export default function ProductsPage() {
                                                             : product.status === "Low Stock"
                                                                 ? "bg-yellow-100 text-yellow-800"
                                                                 : "bg-red-100 text-red-800"
-                                                        }`}
+                                                            }`}
                                                     >
-                                                        <Package className="h-4 w-4 mr-1"/>
+                                                        <Package className="h-4 w-4 mr-1" />
                                                         {product?.stock}
                                                     </div>
                                                 </TableCell>
@@ -245,7 +245,7 @@ export default function ProductsPage() {
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button variant="ghost" size="icon">
-                                                                <MoreHorizontal className="h-4 w-4"/>
+                                                                <MoreHorizontal className="h-4 w-4" />
                                                                 <span className="sr-only">Actions</span>
                                                             </Button>
                                                         </DropdownMenuTrigger>
@@ -253,14 +253,14 @@ export default function ProductsPage() {
                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                             <DropdownMenuItem>
                                                                 <Link href={`/dashboard/products/${product.id}`}
-                                                                      className="flex w-full">
+                                                                    className="flex w-full">
                                                                     View details
                                                                 </Link>
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem>Edit product</DropdownMenuItem>
-                                                            <DropdownMenuSeparator/>
+                                                            <DropdownMenuSeparator />
                                                             <DropdownMenuItem className="text-red-600"
-                                                                              onClick={() => handleDeleteProduct(product)}>
+                                                                onClick={() => handleDeleteProduct(product)}>
                                                                 Delete product
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
@@ -278,98 +278,98 @@ export default function ProductsPage() {
                 <TabsContent value="grid" className="mt-0">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
                         {products.length > 0 ? products.map((product) => (
-                                <Card
-                                    key={product.id}
-                                    className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
-                                >
-                                    <CardHeader className="p-0">
-                                        <div className="relative aspect-square overflow-hidden bg-gray-100">
-                                            <Image
-                                                src={mediaUrlGenerator(product?.thumbnail?.url)}
-                                                alt={product.title}
-                                                fill
-                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                            />
-                                            <div className="absolute top-3 right-3">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button
-                                                            variant="secondary"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
-                                                        >
-                                                            <MoreVertical className="h-4 w-4"/>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem>
-                                                            <Edit className="mr-2 h-4 w-4"/>
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-red-600">
-                                                            <Trash2 className="mr-2 h-4 w-4"/>
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-
-                                    <CardContent className="p-4">
-                                        <div className="space-y-2">
-                                            <div className="flex items-start justify-between">
-                                                <h3 className="font-semibold text-gray-900 line-clamp-1">{product.title}</h3>
-                                                <Badge variant="secondary"
-                                                       className="ml-2 bg-gray-100 text-gray-700 hover:bg-gray-100">
-                                                    {product?.category?.name}
-                                                </Badge>
-                                            </div>
-                                            {/* <p className="text-sm text-gray-600 line-clamp-2">{product.name}</p> */}
-                                            <div className="flex items-center justify-between pt-2">
-                                                <span className="text-lg font-bold text-gray-900">{product.price}</span>
-                                                <div className="flex items-center gap-1 text-sm text-gray-500">
-                                                    <div
-                                                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === "In Stock"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : product.status === "Low Stock"
-                                                                ? "bg-yellow-100 text-yellow-800"
-                                                                : "bg-red-100 text-red-800"
-                                                        }`}
+                            <Card
+                                key={product.id}
+                                className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+                            >
+                                <CardHeader className="p-0">
+                                    <div className="relative aspect-square overflow-hidden bg-gray-100">
+                                        <Image
+                                            src={mediaUrlGenerator(product?.thumbnail?.url)}
+                                            alt={product.title}
+                                            fill
+                                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                        />
+                                        <div className="absolute top-3 right-3">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
                                                     >
-                                                        <Package className="h-4 w-4 mr-1"/>
-                                                        <span>{product?.stock}</span>
-                                                    </div>
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem>
+                                                        <Edit className="mr-2 h-4 w-4" />
+                                                        Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-red-600">
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+
+                                <CardContent className="p-4">
+                                    <div className="space-y-2">
+                                        <div className="flex items-start justify-between">
+                                            <h3 className="font-semibold text-gray-900 line-clamp-1">{product.title}</h3>
+                                            <Badge variant="secondary"
+                                                className="ml-2 bg-gray-100 text-gray-700 hover:bg-gray-100">
+                                                {product?.category?.name}
+                                            </Badge>
+                                        </div>
+                                        {/* <p className="text-sm text-gray-600 line-clamp-2">{product.name}</p> */}
+                                        <div className="flex items-center justify-between pt-2">
+                                            <span className="text-lg font-bold text-gray-900">{product.price}</span>
+                                            <div className="flex items-center gap-1 text-sm text-gray-500">
+                                                <div
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === "In Stock"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : product.status === "Low Stock"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-red-100 text-red-800"
+                                                        }`}
+                                                >
+                                                    <Package className="h-4 w-4 mr-1" />
+                                                    <span>{product?.stock}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    </CardContent>
+                                    </div>
+                                </CardContent>
 
-                                    <CardFooter className="p-4 pt-0 flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="flex-1 bg-white text-gray-700 px-1.5 py-1.5 border-gray-200 hover:bg-gray-50"
-                                        >
-                                            <Edit className="mr-1 h-4 w-4"/>
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleDeleteProduct(product)}
-                                            className="flex-1 bg-white px-1.5 py-1.5 text-red-600 border-red-200 hover:bg-red-50"
-                                        >
-                                            <Trash2 className="mr-1 h-4 w-4"/>
-                                            Delete
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            ))
+                                <CardFooter className="p-4 pt-0 flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 bg-white text-gray-700 px-1.5 py-1.5 border-gray-200 hover:bg-gray-50"
+                                    >
+                                        <Edit className="mr-1 h-4 w-4" />
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleDeleteProduct(product)}
+                                        className="flex-1 bg-white px-1.5 py-1.5 text-red-600 border-red-200 hover:bg-red-50"
+                                    >
+                                        <Trash2 className="mr-1 h-4 w-4" />
+                                        Delete
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))
                             :
                             <div
                                 className="flex flex-col items-center justify-center bg-white shadow-sm rounded-md p-8 col-span-full">
-                                <Package className="h-12 w-12 text-gray-300 mb-2"/>
+                                <Package className="h-12 w-12 text-gray-300 mb-2" />
                                 <h3 className="text-lg font-medium">No products found</h3>
                                 <p className="text-sm text-gray-500 mb-4">
                                     {searchTerm ? "Try a different search term" : "Add a product to get started"}
@@ -408,12 +408,12 @@ export default function ProductsPage() {
                         {productToDelete && (
                             <div className="flex items-center space-x-4">
                                 <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center">
-                                    <Package className="h-6 w-6 text-gray-500"/>
+                                    <Package className="h-6 w-6 text-gray-500" />
                                 </div>
                                 <div>
                                     <h4 className="font-medium">{productToDelete.title}</h4>
                                     <p className="text-sm text-gray-500">
-                                        ${productToDelete.price.toFixed(2)} • {productToDelete.category.name}
+                                        ${productToDelete.price.toFixed(2)} • {productToDelete.category?.name}
                                     </p>
                                 </div>
                             </div>

@@ -1,25 +1,17 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
-
 import { useEffect, useState } from "react"
 import {
-    ArrowUpDown,
-    ChevronDown,
-    Download,
+
     Edit,
-    Filter, Grid,
-    LayoutGrid, List, LucideEye,
-    MoreHorizontal, MoreVertical, Package,
+    MoreHorizontal, Package,
     Plus,
     Search,
-    Trash, Trash2,
-    Upload, X,
+    Trash, X,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     Dialog,
@@ -40,12 +32,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
 import { VariantAttribute } from "./attribute.type"
 import { deleteApi, getApi, postApi, putApi } from "@/lib/api"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Image from "next/image";
-import { mediaUrlGenerator } from "@/lib/utils";
+import { Tabs, TabsContent, } from "@/components/ui/tabs";
 import CustomPagination from "@/components/ui/custom-pagination";
 import { MetaResponse } from "@/lib/types/type";
 import {
@@ -141,7 +130,7 @@ export default function AttributesPage() {
         setSelectedAttributes([])
     }
 
-    const handleSaveVariantAttribute = async (formData: FormData) => {
+    const handleSaveAttribute = async (formData: FormData) => {
         const name = formData.get("name") as string
 
         if (isEditing && attributeToAction) {
@@ -151,7 +140,7 @@ export default function AttributesPage() {
                 }
             }, true)
             if (res.success && res.data) {
-                toast.success("VariantAttribute added successfully")
+                toast.success("Attribute added successfully")
                 setAttributes(attributes.map((attribute) => {
                     // @ts-ignore
                     if (attribute.id === res?.data.data.id) {
@@ -224,18 +213,18 @@ export default function AttributesPage() {
                             <SheetHeader>
                                 <SheetTitle>Create New Attribute</SheetTitle>
                                 <SheetDescription>
-                                    Add a new variant_attribute with a name and description. Click save when you are done.
+                                    Add a new attribute with a name . Click save when you are done.
                                 </SheetDescription>
                             </SheetHeader>
 
-                            <form action={handleSaveVariantAttribute} className="space-y-6 py-6">
+                            <form action={handleSaveAttribute} className="space-y-6 py-6">
                                 <div className="flex flex-col gap-2">
-                                    <Label htmlFor="name">VariantAttribute Name</Label>
+                                    <Label htmlFor="name">Attribute Name</Label>
                                     <Input
                                         id="name"
                                         name="name"
                                         {...(isEditing && attributeToAction && { value: attributeToAction.name })}
-                                        placeholder="Enter variant_attribute name"
+                                        placeholder="Enter attribute name"
                                         required
                                     />
                                 </div>
@@ -246,7 +235,7 @@ export default function AttributesPage() {
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="w-full sm:w-auto">
-                                        Create VariantAttribute
+                                        Create Attribute
                                     </Button>
                                 </SheetFooter>
                             </form>

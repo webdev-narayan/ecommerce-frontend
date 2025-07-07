@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-img-element */
+
 
 "use client"
 
@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Plus, X, Save, Eye, Package } from "lucide-react"
+import { Plus, X, Save, Package } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { VariantAttribute, VariantOption } from "../attributes/attribute.type"
 import { getApi, postApi, uploadToStrapi } from "@/lib/api"
@@ -40,9 +40,11 @@ interface VariantAttributeForm {
 interface VariantCombination {
     variant_options: string[] // Array of option documentIds
     mrp: string
+    price: string
     gallery?: File[]
     thumbnail?: File
     quantity: number
+    sku: string
 }
 
 interface ProductForm {
@@ -51,7 +53,7 @@ interface ProductForm {
     description_rich_text: string
     slug: string
     price: string
-    thumbnail: number | null
+    thumbnail: File | null
     gallery: number[] | null
     specifications: Specification[]
     isFeatured: boolean
@@ -158,7 +160,7 @@ export default function CreateProductPage() {
     })
 
     const [activeTab, setActiveTab] = useState("basic")
-    const [showVariants, setShowVariants] = useState(false)
+    const [hasVariants, setHasVariants] = useState(false)
     const [defaultPrice, setDefaultPrice] = useState("")
 
     const [categories, setCategories] = useState<Category[]>([])
@@ -241,7 +243,9 @@ export default function CreateProductPage() {
                 variants: combinations.map((combo) => ({
                     variant_options: combo,
                     mrp: defaultPrice || "",
+                    price: defaultPrice || "",
                     quantity: 0,
+                    sku: "",
                     // gallery: [],
                     // thumbnail: null,
                 })),
@@ -274,7 +278,7 @@ export default function CreateProductPage() {
         return combinations
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const updateForm = (field: keyof ProductForm, value: any) => {
         setForm((prev) => ({ ...prev, [field]: value }))
     }
@@ -381,67 +385,43 @@ export default function CreateProductPage() {
     const handleSubmit = async () => {
 
         const variants = [];
+        let productThumbnail = null;
+        if (hasVariants && form.variants?.length > 0) {
+            for (const item of form.variants) {
 
-        // const fileUploader = async (item: VariantCombination): Promise<{
-        //   mrp: number
-        //   gallery: number[]
-        //   thumbnail: number | null
-        //   variant_options: string[]
-        // }> => {
-        //   // let gallery = null
-        //   // let thumbnail = null
-        //   // if (item.gallery?.length) {
-        //   //   gallery = await uploadToStrapi(item.gallery)
-        //   // }
-        //   // if (item.thumbnail) {
-        //   //   thumbnail = await uploadToStrapi(item.thumbnail)
-        //   // }
-
-        //   const dd = {
-        //     mrp: 999,
-        //     // gallery: gallery?.map((g) => g.documentId) || [],
-        //     // thumbnail: thumbnail?.map((t) => t.documentId)[0] || null,
-        //     gallery: [47],
-        //     thumbnail: 48,
-        //     variant_options: item.variant_options
-        //   }
-        //   // console.log(dd)
-
-        //   return dd;
-        // }
-
-        console.log(form.variants)
-        // return
-
-        for (const item of form.variants) {
-
-            let thumbnail = null;
-            let gallery = null;
-            if (item.gallery?.length) {
-                gallery = await uploadToStrapi(item.gallery)
-            }
-            if (item.thumbnail) {
-                thumbnail = await uploadToStrapi(item.thumbnail)
-            }
-
-            variants.push(
-                {
-                    mrp: item.mrp,
-                    gallery: gallery?.map(item => item.id) || [],
-                    thumbnail: thumbnail?.map(item => item.id)[0] || null,
-                    variant_options: item.variant_options
+                let thumbnail = null;
+                let gallery = null;
+                if (item.gallery?.length) {
+                    gallery = await uploadToStrapi(item.gallery)
                 }
-            )
+                if (item.thumbnail) {
+                    thumbnail = await uploadToStrapi(item.thumbnail)
+                }
+
+                variants.push(
+                    {
+                        mrp: item.mrp,
+                        price: item.price,
+                        sku: item.sku,
+                        quantity: item.quantity,
+                        gallery: gallery?.map(item => item.id) || [],
+                        thumbnail: thumbnail?.map(item => item.id)[0] || null,
+                        variant_options: item.variant_options
+                    }
+                )
+            }
         }
 
-        // const variants = await form.variants.map(fileUploader)
+        if (form.thumbnail) {
+            productThumbnail = await uploadToStrapi(form.thumbnail)
+        }
 
         const data = {
             title: form.title,
             description: form.description,
             slug: form.slug,
             price: form.price,
-            // thumbnail: form.thumbnail,
+            thumbnail: productThumbnail?.map(item => item.id)[0] || null,
             // gallery: form.gallery,
             specifications: form.specifications,
             isFeatured: form.isFeatured,
@@ -451,7 +431,7 @@ export default function CreateProductPage() {
             variantAttributes: form.variantAttributes,
             variants,
         }
-
+        console.log(data)
         const res = await postApi<{ data: Product }>("/products/create", data, true)
         if (res.success && res.data) {
             console.log("added")
@@ -722,11 +702,11 @@ export default function CreateProductPage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="flex items-center space-x-2">
-                                <Switch id="show-variants" checked={showVariants} onCheckedChange={setShowVariants} />
+                                <Switch id="show-variants" checked={hasVariants} onCheckedChange={setHasVariants} />
                                 <Label htmlFor="show-variants">This product has variants</Label>
                             </div>
 
-                            {showVariants && (
+                            {hasVariants && (
                                 <>
                                     <Separator />
 
@@ -735,7 +715,7 @@ export default function CreateProductPage() {
                                         {form.variantAttributes.map((attr, attrIndex) => {
                                             const availableOptions = attributeOptions[attr.attributeId] || []
                                             const optionsForSelect = availableOptions.map((option) => ({
-                                                value: option.documentId,
+                                                value: option.id.toString(),
                                                 label: option.name,
                                             }))
 
@@ -822,7 +802,7 @@ export default function CreateProductPage() {
                                                                 <div className="relative">
                                                                     <span
                                                                         className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                                                                        $
+                                                                        ₹
                                                                     </span>
                                                                     <Input
                                                                         id="default-price"
@@ -868,43 +848,74 @@ export default function CreateProductPage() {
                                                                         <div
                                                                             className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
 
-                                                                            <div className="space-y-">
-                                                                                <Label htmlFor={`variant-mrp-${index}`}>MRP
-                                                                                    *</Label>
-                                                                                <div className="relative">
-                                                                                    <span
-                                                                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                                                                                        ₹
-                                                                                    </span>
-                                                                                    <Input
-                                                                                        id={`variant-mrp-${index}`}
-                                                                                        type="number"
-                                                                                        step="0.01"
-                                                                                        value={variant.mrp}
-                                                                                        onChange={(e) => updateVariant(index, "mrp", e.target.value)}
-                                                                                        placeholder="0.00"
-                                                                                        className="pl-8"
-                                                                                    />
+                                                                            <div className="md:col-span-2 grid md:grid-cols-4 grid-cols-2 gap-x-4 gap-y-6">
+                                                                                <div className="flex flex-col gap-2">
+                                                                                    <Label htmlFor={`variant-mrp-${index}`}>MRP</Label>
+                                                                                    <div className="relative">
+                                                                                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₹</span>
+                                                                                        <Input
+                                                                                            id={`variant-mrp-${index}`}
+                                                                                            type="number"
+                                                                                            step="0.1"
+                                                                                            value={variant.mrp}
+                                                                                            onChange={(e) => updateVariant(index, "mrp", e.target.value)}
+                                                                                            placeholder="0.00"
+                                                                                            className="pl-8"
+                                                                                        />
+                                                                                    </div>
                                                                                 </div>
-                                                                            </div>
 
-                                                                            <div className="space-y-2">
-                                                                                <Label htmlFor={`variant-mrp-${index}`}>Quantity
-                                                                                    *</Label>
-                                                                                <div className="relative">
-                                                                                    <span
-                                                                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                                                                                        <Package className="w-4 h-4" />
-                                                                                    </span>
-                                                                                    <Input
-                                                                                        id={`variant-mrp-${index}`}
-                                                                                        type="number"
-                                                                                        step="0.01"
-                                                                                        value={variant.quantity}
-                                                                                        onChange={(e) => updateVariant(index, "mrp", e.target.value)}
-                                                                                        placeholder="0.00"
-                                                                                        className="pl-8"
-                                                                                    />
+                                                                                <div className="flex flex-col gap-2">
+                                                                                    <Label htmlFor={`variant-price-${index}`}>Price</Label>
+                                                                                    <div className="relative">
+                                                                                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₹</span>
+                                                                                        <Input
+                                                                                            id={`variant-price-${index}`}
+                                                                                            type="number"
+                                                                                            step="0.1"
+                                                                                            value={variant.price}
+                                                                                            onChange={(e) => updateVariant(index, "price", e.target.value)}
+                                                                                            placeholder="0.00"
+                                                                                            className="pl-8"
+                                                                                        />
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-2">
+                                                                                    <Label htmlFor={`variant-sku-${index}`}>SKU</Label>
+                                                                                    <div className="relative">
+                                                                                        <span
+                                                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                                                                                            <Package className="w-4 h-4" />
+                                                                                        </span>
+                                                                                        <Input
+                                                                                            id={`variant-sku-${index}`}
+                                                                                            type="text"
+                                                                                            step="0.1"
+                                                                                            value={variant.sku}
+                                                                                            onChange={(e) => updateVariant(index, "sku", e.target.value)}
+                                                                                            placeholder="sku"
+                                                                                            className="pl-8"
+                                                                                        />
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div className="flex flex-col gap-2">
+                                                                                    <Label htmlFor={`variant-qty-${index}`}>Quantity</Label>
+                                                                                    <div className="relative">
+                                                                                        <span
+                                                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                                                                                            <Package className="w-4 h-4" />
+                                                                                        </span>
+                                                                                        <Input
+                                                                                            id={`variant-qty-${index}`}
+                                                                                            type="number"
+                                                                                            step="1"
+                                                                                            value={variant.quantity}
+                                                                                            onChange={(e) => updateVariant(index, "quantity", e.target.value)}
+                                                                                            placeholder="0"
+                                                                                            className="pl-8"
+                                                                                        />
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
 

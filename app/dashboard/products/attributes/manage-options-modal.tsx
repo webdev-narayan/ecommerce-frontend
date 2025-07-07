@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { getApi } from "@/lib/api"
+import { getApi, postApi, putApi } from "@/lib/api"
 import { VariantAttribute, VariantOption } from "./attribute.type"
 
 
@@ -99,26 +99,37 @@ export default function ManageOptionsModal({ isOpen, onClose, attribute }: Manag
         const name = formData.get("name") as string
         const value = formData.get("value") as string
 
-        if (isEditing && optionToAction) {
-            // Replace with actual API call
-            const updatedOption = {
-                ...optionToAction,
-                name,
-                value,
-                updatedAt: new Date().toISOString(),
+        if (isEditing && optionToAction && attribute) {
+            const res = await putApi<{ data: VariantOption }>("/variant-options", {
+                data: {
+                    name,
+                    property: value,
+                    variant_attribute: attribute?.id
+                }
+            }, true)
+            if (res.data && res.success && res.data.data) {
+                const updatedOption = res.data.data;
+
+                setOptions(prev => [
+                    ...prev.filter(opt => opt.id !== updatedOption.id),
+                    updatedOption
+                ]);
+
+                toast.success("Option updated successfully");
             }
-            setOptions(options.map((option) => (option.id === optionToAction.id ? updatedOption : option)))
-            toast.success("Option updated successfully")
         } else {
-            // Replace with actual API call
-            // const newOption: VariantOption = {
-            //     id: Date.now(),
-            //     documentId: `opt${Date.now()}`,
-            //     name,
-            //     property,
-            // }
-            // setOptions([...options, newOption])
-            // toast.success("Option added successfully")
+
+            const res = await postApi<{ data: VariantOption }>("/variant-options", {
+                data: {
+                    name,
+                    property: value,
+                    variant_attribute: attribute?.id
+                }
+            }, true)
+            if (res.data && res.success && res.data.data) {
+                setOptions([...options, res.data.data])
+                toast.success("Option added successfully")
+            }
         }
         setIsOptionFormOpen(false)
         setIsEditing(false)
@@ -329,7 +340,7 @@ export default function ManageOptionsModal({ isOpen, onClose, attribute }: Manag
                             <Input
                                 id="value"
                                 name="value"
-                                defaultValue={isEditing && optionToAction ? optionToAction?.property : ""}
+                                defaultValue={isEditing && optionToAction?.property ? optionToAction?.property : ""}
                                 placeholder="Enter option value (e.g., #FF0000, XL, cotton-blend)"
                                 required
                             />

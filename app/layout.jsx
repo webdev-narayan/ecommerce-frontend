@@ -5,6 +5,8 @@ import { Toaster } from "sonner"
 import { Header } from './../components/layout/header';
 import { Footer } from './../components/layout/footer';
 import { AuthProvider } from "@/contexts/auth-context";
+import Head from "next/head";
+import InstallPwaPrompt from "@/components/install-pwa";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,7 +20,11 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
+      <Head>
+        <link rel="manifest" href="/manifest.json" />
+      </Head>
       <body className={inter.className}>
+        <InstallPwaPrompt />
         <AuthProvider>
           <CartProvider>
             <Header />

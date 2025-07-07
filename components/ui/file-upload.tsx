@@ -8,7 +8,6 @@ import { Upload, X, FileImage, File } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { useRef } from "react"
 
 interface FileUploadProps {
@@ -18,6 +17,7 @@ interface FileUploadProps {
     maxFileSize?: number // in MB
     isMultiple?: boolean
     title?: string
+    name?: string
 }
 
 export default function FileUpload({
@@ -27,6 +27,7 @@ export default function FileUpload({
     maxFileSize = 5,
     isMultiple = false,
     title = "Upload file",
+    name
 }: FileUploadProps) {
     const [files, setFiles] = useState<File[]>([])
     const [previews, setPreviews] = useState<string[]>([])
@@ -167,6 +168,7 @@ export default function FileUpload({
                 <Input
                     ref={fileInputRef}
                     type="file"
+                    name={name || ""}
                     multiple={isMultiple}
                     accept={acceptedFileTypes.join(",")}
                     onChange={handleInputChange}

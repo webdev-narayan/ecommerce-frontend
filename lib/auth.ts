@@ -13,8 +13,9 @@ export async function login(credentials: LoginCredentials) {
   const response = await postApi<{ user: User, jwt: string }>("/auth/local", {
     identifier: credentials.email,
     password: credentials.password,
-  })
+  }, false)
 
+  console.log(response)
   // Mock authentication - replace with actual auth logic
   if (response.success && response.data) {
     console.log(response.data)
@@ -47,7 +48,8 @@ export async function getUser(): Promise<User | null> {
   if (meReponse.success && meReponse.data) {
     return meReponse.data
   } else {
-    redirect("/auth")
+    // redirect("/auth")
+    return null
   }
 }
 

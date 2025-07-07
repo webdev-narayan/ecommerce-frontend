@@ -1,5 +1,6 @@
+"use server"
 import LoginForm from "./components/LoginForm"
-import { getUser } from "@/lib/auth"
+import { getUser, logout } from "@/lib/auth"
 import { redirect } from 'next/navigation';
 
 export default async function AuthPage() {

@@ -30,7 +30,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { deleteApi, getApi, postApi, putApi } from "@/lib/api"
+import { deleteApi, getApi, postApi, putApi, uploadToStrapi } from "@/lib/api"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import { mediaUrlGenerator } from "@/lib/utils";
@@ -40,6 +40,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 
 import { Banner } from './banner.type';
 import { Switch } from "@/components/ui/switch"
+import FileUpload from "@/components/ui/file-upload"
 
 export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([])
@@ -121,15 +122,31 @@ export default function BannersPage() {
   // }
 
   const handleSaveBanner = async (formData: FormData) => {
-    const name = formData.get("name") as string
+    const title = formData.get("title") as string
     const description = formData.get("description") as string
+    const link_url = formData.get("link_url") as string;
+    const is_active = formData.get("is_active") as string;
+
+    const files = formData.getAll("desktop_image") as File[]
+    let thumbnail: number | null = null;
+    if (files.length > 0) {
+      const res = await uploadToStrapi(files)
+      if (res) {
+        thumbnail = res[0].id
+      }
+    }
+
+    const payload = {
+      title: title,
+      image: thumbnail,
+      description: description,
+      link_url: link_url,
+      is_active: is_active == "on" ? true : false
+    }
 
     if (isEditing && bannerToAction) {
       const res = await putApi<{ data: Banner }>(`/banners/${bannerToAction.documentId}`, {
-        data: {
-          name,
-          description
-        }
+        data: payload
       }, true)
       if (res.success && res.data) {
         toast.success("Banner added successfully")
@@ -144,7 +161,9 @@ export default function BannersPage() {
       }
 
     } else {
-      const res = await postApi<{ data: Banner }>("/banners", { data: { name, description } }, true)
+      const res = await postApi<{ data: Banner }>("/banners", {
+        data: payload
+      }, true)
       if (res.success && res.data) {
         toast.success("Banner added successfully")
         setBanners([...banners, res.data.data])
@@ -215,39 +234,56 @@ export default function BannersPage() {
 
               <form action={handleSaveBanner} className="space-y-6 py-6">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="name">Banner Name</Label>
+                  <Label htmlFor="title">Title</Label>
                   <Input
-                    id="name"
-                    name="name"
+                    id="title"
+                    name="title"
                     {...(isEditing && bannerToAction && { value: bannerToAction.title })}
-                    placeholder="Enter banner name"
+                    placeholder="Enter banner title"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="image" className="">
-                    Image
-                  </Label>
-                  <div className="col-span-3">
-                    <div className="flex items-center justify-center w-full">
-                      <label
-                        htmlFor="dropzone-file"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Upload className="w-8 h-8 mb-3 text-gray-500" />
-                          <p className="mb-2 text-sm text-gray-500">
-                            <span className="font-semibold">Click to upload</span> or drag
-                            and drop
-                          </p>
-                          <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX.
-                            2MB)</p>
-                        </div>
-                        <input id="dropzone-file" type="file" className="hidden" />
-                      </label>
-                    </div>
-                  </div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    name="description"
+                    {...(isEditing && bannerToAction && { value: bannerToAction.description })}
+                    placeholder="Enter banner description"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="link_url">Link Url</Label>
+                  <Input
+                    id="link_url"
+                    name="link_url"
+                    {...(isEditing && bannerToAction && { value: bannerToAction.link_url })}
+                    placeholder="Enter banner Link url"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="is_active">Active</Label>
+                  <Switch
+                    id="is_active"
+                    name="is_active"
+                    {...(isEditing && bannerToAction && { checked: bannerToAction.is_active })}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <FileUpload
+                    title="Desktop Image"
+                    isMultiple={false}
+                    key={"desk_image"}
+                    maxFileSize={3}
+                    name={"desktop_image"}
+                  // onFilesChange={(file:File[])=>}
+                  />
                 </div>
 
                 <SheetFooter className="flex flex-col sm:flex-row gap-2">
@@ -354,7 +390,7 @@ export default function BannersPage() {
                                   className="w-full h-full object-left object-cover"
                                 />
                               </div>
-                              <div className="aspect-[1/1] max-h-[100px] overflow-hidden rounded">
+                              <div className="aspect-square max-h-[100px] overflow-hidden rounded">
                                 <img
                                   src={mediaUrlGenerator(banner?.image?.url)}
                                   alt={banner.title}

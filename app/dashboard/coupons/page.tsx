@@ -23,6 +23,8 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Coupon } from './coupon.type';
 import moment from "moment"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 
 export default function CouponsPage() {
     const [coupons, setCoupons] = useState<Coupon[]>([])
@@ -193,13 +195,73 @@ export default function CouponsPage() {
 
                             <form action={handleSaveCoupon} className="space-y-6 py-6">
                                 <div className="flex flex-col gap-2">
-                                    <Label htmlFor="name">Coupon Name</Label>
+                                    <Label htmlFor="code">Coupon Code</Label>
                                     <Input
-                                        id="name"
-                                        name="name"
+                                        id="code"
+                                        name="code"
                                         {...(isEditing && couponToAction && { value: couponToAction.code })}
-                                        placeholder="Enter coupon name"
+                                        placeholder="Enter coupon code"
                                         required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="name">Discount Type</Label>
+                                    <Select name="discount_type"
+                                        {...(isEditing ? couponToAction && { value: couponToAction.discount_type === "FLAT" ? "FLAT" : "PERCENTAGE" } : { value: "PERCENTAGE" })}
+
+                                    >
+                                        <SelectTrigger id="discount_type">
+                                            <SelectValue placeholder="Select discount type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="PERCENTAGE">PERCENTAGE</SelectItem>
+                                            <SelectItem value="FLAT">FLAT</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="discount_value">Discount Value</Label>
+                                    <Input
+                                        id="discount_value"
+                                        name="discount_value"
+                                        {...(isEditing && couponToAction && { value: couponToAction.discount_value })}
+                                        placeholder="Enter coupon discount value"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="expires_at">Expiry Date</Label>
+                                    <Input
+                                        id="expires_at"
+                                        name="expires_at"
+                                        type="date"
+                                        {...(isEditing && couponToAction && { value: couponToAction.expires_at })}
+                                        placeholder="Enter coupon expiry date"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="usage_limit">Usage Limit</Label>
+                                    <Input
+                                        id="usage_limit"
+                                        name="usage_limit"
+                                        type="number"
+                                        {...(isEditing && couponToAction && { value: couponToAction.usage_limit })}
+                                        placeholder="Enter coupon usage limit"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="is_active">Is Active</Label>
+                                    <Switch
+                                        id=""
+                                        name="is_active"
+                                    // {...(isEditing && couponToAction && { value: couponToAction.is_active })}
+                                    // checked
                                     />
                                 </div>
                                 <SheetFooter className="flex flex-col sm:flex-row gap-2">
@@ -208,7 +270,7 @@ export default function CouponsPage() {
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="w-full sm:w-auto">
-                                        Create Coupon
+                                        Save Coupon
                                     </Button>
                                 </SheetFooter>
                             </form>

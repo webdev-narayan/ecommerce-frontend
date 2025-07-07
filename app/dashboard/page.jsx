@@ -54,7 +54,7 @@ export default function DashboardPage() {
                 <DollarSign className="h-4 w-4 text-gray-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$45,231.89</div>
+                <div className="text-2xl font-bold">₹45,231.89</div>
                 <p className="text-xs text-gray-500">+20.1% from last month</p>
               </CardContent>
             </Card>
@@ -98,16 +98,33 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="flex items-center">
+                  {[
+                    {
+                      name: "Dinesh",
+                      email: "dins@gmail.com"
+                    },
+                    {
+                      name: "Mitali",
+                      email: "mitali002@gmail.com"
+                    },
+                    {
+                      name: "Avi Raj",
+                      email: "araj998@gmail.com"
+                    },
+                    {
+                      name: "Shiv",
+                      email: "shivss343@gmail.com"
+                    },
+                  ].map((customer) => (
+                    <div key={customer} className="flex items-center">
                       <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center mr-3">
                         <Users className="h-4 w-4 text-gray-500" />
                       </div>
                       <div className="space-y-1 flex-1">
-                        <p className="text-sm font-medium leading-none">Customer #{i}</p>
-                        <p className="text-sm text-gray-500">customer{i}@example.com</p>
+                        <p className="text-sm font-medium leading-none">{customer.name}</p>
+                        <p className="text-sm text-gray-500">{customer.email}</p>
                       </div>
-                      <div className="font-medium">${(Math.random() * 100).toFixed(2)}</div>
+                      <div className="font-medium">₹{(Math.random() * 1000).toFixed(2)}</div>
                     </div>
                   ))}
                 </div>
