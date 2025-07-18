@@ -447,7 +447,7 @@ export default function CreateProductPage() {
         variant.variant_options.forEach((optionId) => {
             // Find the option name from our cached options
             Object.values(attributeOptions).forEach((options) => {
-                const option = options.find((opt) => opt.documentId === optionId)
+                const option = options.find((opt) => opt.id.toString() === optionId)
                 if (option) {
                     optionNames.push(option.name)
                 }

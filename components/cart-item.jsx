@@ -12,7 +12,7 @@ export function CartItem({ item, removeItem }) {
         <div className="relative h-16 w-16">
           <Image
             src={item.image || "/placeholder.svg"}
-            alt={item.name}
+            alt={item.name || "Product"}
             fill
             className="object-cover rounded-md"
             sizes="(max-width: 768px) 25vw, (max-width: 1200px) 20vw, 15vw"

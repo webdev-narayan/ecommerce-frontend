@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { CartSheet } from "../cart-sheet"
-import { usePathname } from "next/navigation"
+import { redirect, usePathname } from "next/navigation"
 import { noHeaderFooterRoutes } from "@/lib/constants"
 
 export function Header() {
@@ -48,7 +48,7 @@ export function Header() {
       </div>
 
       {/* Main Header */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-2 py-4">
         <div className="flex items-center justify-between">
           {/* Mobile Menu */}
           <Sheet>
@@ -70,7 +70,7 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center lg:space-x-8 space-x-3 ml-4 xl:ml-0">
             <Link href="/shop" className="text-gray-700 hover:text-gray-900 font-medium">
               Shop
             </Link>
@@ -94,11 +94,11 @@ export function Header() {
           </div>
 
           {/* Header Actions */}
-          <div className="flex items-center md:space-x-4">
-            <Button variant="ghost" size="icon">
+          <div className="flex items-center md:space-x-2">
+            <Button className="" variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button className="" onClick={() => redirect("/wishlist")} variant="ghost" size="icon">
               <Heart className="h-5 w-5" />
             </Button>
             <CartSheet />

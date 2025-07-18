@@ -180,11 +180,11 @@ export default function ProductPage() {
 
                 {/* Price */}
                 <div className="flex items-center space-x-3 mb-6">
-                  <span className="md:text-3xl text-lg font-bold text-gray-900">₹ {product.product_variants[0].price}</span>
+                  <span className="md:text-3xl text-lg font-bold text-gray-900">₹ {product.price || product.product_variants[0].price}</span>
                   {product.product_variants[0] && (
                     <span className="md:text-3xl text-sm text-gray-500 line-through">₹{product.product_variants[0].mrp}</span>
                   )}
-                  {product.product_variants[0].mrp && (
+                  {product.product_variants[0]?.mrp && (
                     <Badge variant="destructive" className="text-white">Save ₹{(product.product_variants[0].mrp - product.product_variants[0].price).toFixed(2)}</Badge>
                   )}
                 </div>
