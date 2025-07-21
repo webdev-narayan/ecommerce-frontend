@@ -1,3 +1,5 @@
+import { Media } from "./type"
+
 export enum RolesEnum {
   ADMIN = "ADMIN",
   DRIVER = "DRIVER"
@@ -16,6 +18,7 @@ export interface User {
   name: string
   roles: Role[],
   userInfo: unknown
+  profile?: Media
 }
 
 export interface LoginCredentials {

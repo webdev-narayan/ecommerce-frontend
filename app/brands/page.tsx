@@ -16,6 +16,7 @@ import { Banner } from "../dashboard/banners/banner.type"
 import { BannerPlacement } from "@/lib/types/type"
 import { ImageCarousel } from "@/components/image-carousel"
 import { Skeleton } from "@/components/ui/skeleton"
+import { redirect } from "next/navigation"
 
 const BrandsPage = () => {
   const [brands, setBrands] = useState<Brand[]>([])
@@ -125,7 +126,11 @@ const BrandsPage = () => {
                     </Badge> */}
                         </div>
 
-                        <Button className="w-full" variant="outline">
+                        <Button
+                          className="w-full"
+                          variant="outline"
+                          onClick={() => redirect(`/shop?brand=${brand.id}`)}
+                        >
                           Shop {brand.name}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>

@@ -4,27 +4,9 @@
 
 import { useState, useEffect } from "react"
 import {
-  Search,
   Filter,
-  Star,
-  Heart,
-  ShoppingCart,
-  User,
-  Menu,
-  Phone,
-  Mail,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-  MapPin,
 } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/lib/cart-context"
@@ -33,12 +15,15 @@ import { getApi } from '@/lib/api';
 import { Product } from "../dashboard/products/product.type"
 import { Brand } from "../dashboard/brands/brand.type"
 import { Category } from "../dashboard/categories/categories.type"
-import { mediaUrlGenerator } from "@/lib/utils"
 import { VariantAttribute } from "../dashboard/products/attributes/attribute.type"
 import FilterSection from "./components/FilterSection"
-import { FilterSkeleton } from "./components/ProductSkelton"
-import { LoadingCartWithMan, LoadingShoppingCart } from "@/components/loaders"
+import { LoadingShoppingCart } from "@/components/loaders"
 import ProductCard from "@/components/product-card"
+import { useSearchParams, useRouter } from "next/navigation"
+import { ImageCarousel } from "@/components/image-carousel"
+import React from "react"
+import { Banner } from "../dashboard/banners/banner.type"
+import { BannerPlacement } from "@/lib/types/type"
 
 export default function ShopPage() {
   const [showMobileFilter, setShowMobileFilter] = useState(false)
@@ -56,12 +41,10 @@ export default function ShopPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const { addItem, getTotalItems } = useCart()
   const [debouncedSearchedQuery, setDebouncedSearchedQuery] = useState<string>("")
+  const [hasClearedFilters, setIsClearedFilters] = useState(false)
+  const [banners, setBanners] = useState<Banner[]>([])
 
-
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
-
+  const searchParam = useSearchParams()
 
   const getProducts = async () => {
     setIsLoading(true)
@@ -94,6 +77,14 @@ export default function ShopPage() {
       query.append("filters[title][$containsi]", debouncedSearchedQuery);
     }
 
+    if (selectedCategories.length === 0 && searchParam.get('category') && !hasClearedFilters) {
+      query.append(`filters[category][id][$eq]`, searchParam.get('category') || "")
+    }
+
+    if (selectedBrands.length === 0 && searchParam.get('brand') && hasClearedFilters) {
+      query.append(`filters[brand][id][$eq]`, searchParam.get('brand') || "")
+    }
+
 
     const res = await getApi<{ data: Product[] }>(`/products?${query.toString()}`, false)
     if (res.success && res.data) {
@@ -116,6 +107,16 @@ export default function ShopPage() {
     }
   }
 
+  const getBanners = async () => {
+    const query = new URLSearchParams();
+    query.append("filters[placement][$eq]", BannerPlacement.PRODUCT)
+    query.append("populate", "*")
+    const res = await getApi<{ data: Banner[] }>(`/banners?${query.toString()}`, false)
+    if (res.success && res.data) {
+      setBanners(res.data?.data)
+    }
+  }
+
   const getAttributes = async () => {
     const query = new URLSearchParams();
     query.append("populate", "variant_options");
@@ -126,16 +127,17 @@ export default function ShopPage() {
   }
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       getCategories(),
       getBrands(),
-      getAttributes()
+      getAttributes(),
+      getBanners()
     ])
   }, [])
 
   useEffect(() => {
     getProducts()
-  }, [selectedCategories, selectedBrands, selectedVariantOptions])
+  }, [selectedCategories, selectedBrands, selectedVariantOptions, debouncedSearchedQuery])
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -147,9 +149,20 @@ export default function ShopPage() {
     };
   }, [searchQuery]);
 
+
   useEffect(() => {
-    getProducts()
-  }, [debouncedSearchedQuery])
+    if (searchParam.get('category')) {
+      setSelectedCategories([Number(searchParam.get('category'))])
+    }
+
+    if (searchParam.get('brand')) {
+      setSelectedBrands([Number(searchParam.get('brand'))])
+    }
+  }, [])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
 
   const handleCategoryChange = (category: number, checked: boolean | string) => {
@@ -177,6 +190,7 @@ export default function ShopPage() {
   }
 
 
+
   const clearAllFilters = () => {
     setSelectedCategories([])
     setSelectedBrands([])
@@ -184,6 +198,7 @@ export default function ShopPage() {
     // setSelectedColors([])
     setPriceRange([0, 500])
     setSearchQuery("")
+    setIsClearedFilters(true)
   }
 
   const handleAddToCart = (product: Product) => {
@@ -193,8 +208,18 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+
+      <div className="mt-10 container mx-auto py-6">
+        <ImageCarousel
+          images={banners.map(item => item.image.url)}
+          width={1000}
+          height={1000}
+          className="md:aspect-[4/1] aspect-[3/1] rounded-xl overflow-hidden"
+        />
+      </div>
+
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 md:px-0 py-8">
         <div className="flex md:gap-8 gap-4">
           {/* Desktop Filters Sidebar */}
           <div className="hidden md:block w-64 flex-shrink-0">
@@ -302,76 +327,6 @@ export default function ShopPage() {
                     ))}
                   </div>
             }
-
-            {/* {viewMode === "grid" ? (
-            ) : (
-              <div className="space-y-4">
-                {products.map((product) => (
-                  <Card key={product.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex gap-6">
-                        <Link href={`/product/${product.slug}`}>
-                          <div className="relative w-32 h-32 flex-shrink-0">
-                            <Image
-                              src={mediaUrlGenerator(product.thumbnail?.url)}
-                              alt={product.title}
-                              width={128}
-                              height={128}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                            {product.stock && (
-                              <Badge className="absolute top-1 left-1 bg-red-500 text-xs">Sale</Badge>
-                            )}
-                          </div>
-                        </Link>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <Link href={`/product/${product.slug}`}>
-                                <h3 className="text-lg font-semibold text-gray-900 hover:text-gray-700 mb-1">
-                                  {product.title}
-                                </h3>
-                              </Link>
-                              <p className="text-gray-500 mb-2">{product?.brand?.name}</p>
-                              <div className="flex items-center mb-2">
-                                <div className="flex items-center">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`w-4 h-4 ${i < Math.floor(5)
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-gray-300"
-                                        }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="text-sm text-gray-500 ml-2">({100} reviews)</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-xl font-bold text-gray-900">${product.price ?? product.product_variants[0]?.price}</span>
-                                {product.mrp && (
-                                  <span className="text-gray-500 line-through">${product.mrp}</span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button size="icon" variant="ghost">
-                                <Heart className="h-4 w-4" />
-                              </Button>
-                              <Button onClick={() => handleAddToCart(product)}>
-                                <ShoppingCart className="h-4 w-4 mr-2" />
-                                Add to Cart
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )} */}
-
           </div>
         </div>
       </div>

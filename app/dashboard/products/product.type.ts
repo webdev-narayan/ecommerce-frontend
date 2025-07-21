@@ -2,6 +2,7 @@ import { Media } from "@/lib/types/type";
 import { Category } from "@/app/dashboard/categories/categories.type";
 import { VariantOption } from "./attributes/attribute.type";
 import { Brand } from "../brands/brand.type";
+import { User } from "@/lib/types/auth";
 
 export interface Product {
     id: number;
@@ -9,6 +10,7 @@ export interface Product {
     slug: string;
     title: string;
     description: string;
+    description_rich_text: string;
     price: number;
     mrp: number;
     quantity: number;
@@ -20,7 +22,22 @@ export interface Product {
     brand?: Brand;
     thumbnail?: Media;
     gallery?: Media[];
-    product_variants: ProductVariant[]
+    product_variants: ProductVariant[];
+    review_count?: number;
+    reviews?: Review[]
+}
+
+export interface Review {
+    id: number;
+    documentId: string;
+    comment: string;
+    rating: number;
+    images?: Media[];
+    user?: User;
+
+    createdAt: string;
+    updatedAt: string;
+
 }
 
 export interface ProductVariant {

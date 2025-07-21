@@ -185,7 +185,7 @@ const FilterSection = ({
                     <div>
                         <Label className="text-sm font-medium mb-2 block">Categories</Label>
                         <div className="space-y-2">
-                            <ScrollArea className="h-36">
+                            <ScrollArea className="max-h-36">
                                 {categories.map((category) => (
                                     <div key={category.documentId} className="flex items-center space-x-2">
                                         <Checkbox

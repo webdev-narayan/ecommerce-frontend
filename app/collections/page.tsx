@@ -19,6 +19,7 @@ import { Banner } from "../dashboard/banners/banner.type"
 import { ImageCarousel } from "@/components/image-carousel"
 import { mediaUrlGenerator } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { redirect } from "next/navigation"
 
 export default function CollectionsPage() {
   const { getTotalItems } = useCart()
@@ -127,7 +128,13 @@ export default function CollectionsPage() {
                           <p className="text-gray-600 mb-4 text-sm leading-relaxed">{collection.description}</p>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">Products {100}</span>
-                            <Button variant="outline" size="sm" className="text-gray-600 hover:text-gray-900">
+                            <Button
+                              onClick={() => {
+                                redirect(`/collections/${collection.documentId}`)
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="text-gray-600 hover:text-gray-900">
                               View All
                               <ArrowRight className="ml-1 h-3 w-3" />
                             </Button>

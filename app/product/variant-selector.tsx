@@ -159,7 +159,7 @@ export default function VariantSelector({
     return (
         <div className={cn("space-y-5", className)}>
             <div className="space-y-4">
-                <h3 className="text-base font-medium text-gray-900">Select Options</h3>
+                <h3 className="text-base font-medium text-gray-900">Select Variant</h3>
 
                 {availableAttributes.map((attribute) => {
                     return (
@@ -207,7 +207,7 @@ export default function VariantSelector({
             </div>
 
             {/* Selected combination display */}
-            {Object.keys(selectedOptions).length > 0 && (
+            {/* {Object.keys(selectedOptions).length > 0 && (
                 <div className="pt-4 border-t border-gray-200">
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium text-gray-700">Current Selection</h4>
@@ -225,15 +225,15 @@ export default function VariantSelector({
                         {!findMatchingVariant && Object.keys(selectedOptions).length > 0 && (
                             <p className="text-sm text-red-600 font-medium">This combination is not available</p>
                         )}
-                        {/* {findMatchingVariant && (
+                        {findMatchingVariant && (
                             <div className="text-xs text-gray-500 mt-1">
                                 <span>Variant ID: {findMatchingVariant.id}</span>
                                 {findMatchingVariant.sku && <span> • SKU: {findMatchingVariant.sku}</span>}
                             </div>
-                        )} */}
+                        )}
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     )
 }

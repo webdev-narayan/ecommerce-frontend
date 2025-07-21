@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "layout/Header.jsx", "app/layout.jsx", "components/layout/header.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "layout/Header.jsx", "app/layout.jsx", "components/layout/header.jsx", "lib/cart-context.tsx"],
   "exclude": ["node_modules"]
 }

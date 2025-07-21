@@ -14,6 +14,7 @@ import { BannerPlacement } from "@/lib/types/type"
 import { Banner } from "../dashboard/banners/banner.type"
 import { ImageCarousel } from "@/components/image-carousel"
 import { Skeleton } from "@/components/ui/skeleton"
+import { redirect } from "next/navigation"
 
 export default function CategoriesPage() {
 
@@ -125,7 +126,7 @@ export default function CategoriesPage() {
                           <p className="text-gray-600 mb-4 text-sm leading-relaxed">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eveniet, similique?</p>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">{10}</span>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" onClick={() => redirect(`/shop?category=${category.id}`)} size="sm">
                               Shop Now
                               <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
