@@ -649,7 +649,12 @@ export default function ProductPage() {
                     <TabsContent value="details" className="mt-6">
                       <Card className="shadow-none">
                         <CardContent className="p-4 md:p-6">
-                          <div className="md-div" dangerouslySetInnerHTML={{ __html: md.render(product.description_rich_text) }} />
+                          {
+                            product.description_rich_text &&
+                            (
+                              <div className="md-div" dangerouslySetInnerHTML={{ __html: md.render(product.description_rich_text) }} />
+                            )
+                          }
                         </CardContent>
                       </Card>
                     </TabsContent>
