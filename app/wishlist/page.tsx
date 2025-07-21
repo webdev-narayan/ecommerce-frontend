@@ -24,7 +24,7 @@ const WishlistPage = () => {
 
                 if (ids.length > 0) {
 
-                    const res = await getApi<{ data: Product[] }>(`/products/by-ids/${ids}`, false)
+                    const res = await getApi<Product[]>(`/products/by-ids/${ids}`, false)
                     if (res.data) {
                         setLikedProducts(res.data)
                     }
