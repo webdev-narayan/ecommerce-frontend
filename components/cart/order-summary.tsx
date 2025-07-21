@@ -13,7 +13,7 @@ export function OrderSummary() {
 
     const subtotal = getTotalPrice()
     const shipping = subtotal >= 500 ? 0 : 50
-    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0
+    const couponDiscount = appliedCoupon ? appliedCoupon.discount_value : 0
     const processingFee = selectedPaymentGateway?.processingFee || 0
     const tax = 0
     const total = subtotal + shipping - couponDiscount + processingFee + tax
