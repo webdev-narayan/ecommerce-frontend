@@ -140,7 +140,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { CartSheet } from "../cart-sheet"
+import { CartSheet } from "../cart/cart-sheet"
 import { redirect, usePathname } from "next/navigation"
 import { noHeaderFooterRoutes } from "@/lib/constants"
 
