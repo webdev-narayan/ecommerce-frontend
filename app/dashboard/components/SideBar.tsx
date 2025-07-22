@@ -175,7 +175,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { redirect, usePathname } from "next/navigation"
 import { useState } from "react"
 import { navigationLinks } from "../utils/constants"
 import {
@@ -216,6 +216,7 @@ function NavItem({ item, pathname, isMobile = false }: any) {
             </Link>
         )
     }
+
 
     return (
         <div>
@@ -260,6 +261,14 @@ function NavItem({ item, pathname, isMobile = false }: any) {
 
 export default function DashboardSidebar() {
     const pathname = usePathname()
+
+
+    const handleLogout = async () => {
+        const res = await logout()
+        if (res.successs) {
+            redirect("/auth")
+        }
+    }
 
     return (
         <>
@@ -395,7 +404,7 @@ export default function DashboardSidebar() {
 
                                 <DropdownMenuSeparator />
 
-                                <DropdownMenuItem onClick={logout} className="text-red-600 focus:text-red-700">
+                                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-700">
                                     <LogOut className="mr-2 h-4 w-4" /> Logout
                                 </DropdownMenuItem>
                             </DropdownMenuContent>

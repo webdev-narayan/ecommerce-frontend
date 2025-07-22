@@ -227,7 +227,7 @@ export default function ProductsPage() {
                                                     <div className="font-medium">{product.title}</div>
                                                 </TableCell>
                                                 <TableCell>{product.category?.name}</TableCell>
-                                                <TableCell>₹ {product?.product_variants[0].price}</TableCell>
+                                                <TableCell>₹ {product?.price || "N/A"}</TableCell>
                                                 <TableCell>
                                                     <div
                                                         className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${product.status === "In Stock"

@@ -3,7 +3,7 @@
 import { CreditCard } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { usePayment } from "@/hooks/use-payment"
+import { usePayment } from "@/contexts/payment-context"
 
 export function PaymentSelection() {
     const { paymentGateways, selectedPaymentGateway, setSelectedPaymentGateway } = usePayment()

@@ -231,7 +231,7 @@ export function Header() {
               <Search className="h-5 w-5" />
             </Button>
 
-            <Button variant="ghost" size="icon">
+            <Button onClick={() => redirect("/my-account")} variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>
             <Button onClick={() => redirect("/wishlist")} variant="ghost" size="icon">

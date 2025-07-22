@@ -1,8 +1,8 @@
 "use client"
 
 import { Separator } from "@/components/ui/separator"
-import { useCoupon } from "@/hooks/use-coupon"
-import { usePayment } from "@/hooks/use-payment"
+import { useCoupon } from "@/contexts/coupon-context"
+import { usePayment } from "@/contexts/payment-context"
 import { useCart } from "@/lib/cart-context"
 
 
@@ -10,10 +10,29 @@ export function OrderSummary() {
     const { getTotalPrice } = useCart()
     const { appliedCoupon } = useCoupon()
     const { selectedPaymentGateway } = usePayment()
-
     const subtotal = getTotalPrice()
     const shipping = subtotal >= 500 ? 0 : 50
-    const couponDiscount = appliedCoupon ? appliedCoupon.discount_value : 0
+    // Calculate coupon discount based on type
+    const calculateCouponDiscount = () => {
+        if (!appliedCoupon) return 0;
+
+        if (subtotal < appliedCoupon.min_order_amount) {
+            return 0;
+        }
+
+        if (appliedCoupon.discount_type === "PERCENTAGE") {
+            const percentageDiscount = (subtotal * appliedCoupon.discount_value) / 100;
+            return appliedCoupon.max_discount
+                ? Math.min(percentageDiscount, appliedCoupon.max_discount)
+                : percentageDiscount;
+        } else {
+            // FLAT discount
+            return Math.min(appliedCoupon.discount_value, subtotal);
+        }
+    };
+
+
+    const couponDiscount = calculateCouponDiscount()
     const processingFee = selectedPaymentGateway?.processingFee || 0
     const tax = 0
     const total = subtotal + shipping - couponDiscount + processingFee + tax
@@ -31,10 +50,15 @@ export function OrderSummary() {
                         {shipping === 0 ? "Free" : `₹ ${shipping.toFixed(2)}`}
                     </span>
                 </div>
-                {appliedCoupon && (
+                {appliedCoupon && couponDiscount > 0 && (
                     <div className="flex justify-between text-green-600">
-                        <span>Coupon Discount</span>
-                        <span>-₹ {couponDiscount.toFixed(2)}</span>
+                        <span>
+                            Coupon Discount ({appliedCoupon.code})
+                            {appliedCoupon.discount_type === "PERCENTAGE" && (
+                                <span className="text-xs ml-1">({appliedCoupon.discount_value}% off)</span>
+                            )}
+                        </span>
+                        <span>- ₹ {couponDiscount.toFixed(2)}</span>
                     </div>
                 )}
                 {processingFee > 0 && (

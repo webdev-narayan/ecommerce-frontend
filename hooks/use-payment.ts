@@ -11,7 +11,7 @@ interface PaymentGateway {
 
 const defaultPaymentGateways: PaymentGateway[] = [
   { id: "razorpay", name: "Razorpay", icon: "💳", processingFee: 0 },
-  { id: "cod", name: "Cash On Delivery", icon: "🪙", processingFee: 0 },
+  { id: "cod", name: "COD", icon: "🪙", processingFee: 0 },
 
 ]
 

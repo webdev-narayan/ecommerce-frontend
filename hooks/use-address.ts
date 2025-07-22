@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-interface Address {
+export interface Address {
   id: number; // Optional, added by Strapi
   name: string;
   phone: string;
@@ -14,8 +14,6 @@ interface Address {
   pincode: string;
   country: string;
   is_default: boolean;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 const defaultAddresses: Address[] = [

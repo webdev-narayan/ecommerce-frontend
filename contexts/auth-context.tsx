@@ -3,66 +3,67 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Cookies from 'js-cookie'
-import { postApi } from '@/lib/api'
+import type { LoginResponse, User } from '@/lib/types/auth'
 
 interface AuthContextType {
   isAuthenticated: boolean
+  user: User | null;
   userRole: string | null
-  login: (email: string, role: string) => void
+  login: (email: string, role: string) => Promise<LoginResponse | null>
   logout: () => void
   loading: boolean
 }
 
-interface User {
-  id: number;
-  documenId: string;
-  name: string;
-  email: string;
-  role: Role;
-}
-interface Role {
-  id: number;
-  name: string;
-}
+import { getUser, login as SLogin, logout as SLogout } from "@/lib/auth"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    const auth = Cookies.get('isAuthenticated') === 'true'
-    const role = Cookies.get('userRole') || null
-    setIsAuthenticated(auth)
-    setUserRole(role)
+  const meApi = async () => {
+    setLoading(true)
+    const res = await getUser()
+    if (res) {
+      setIsAuthenticated(true)
+      setUserRole("authenticated")
+    } else {
+      setIsAuthenticated(false)
+    }
     setLoading(false)
+  }
+  useEffect(() => {
+    meApi()
   }, [])
 
-  const login = async (email: string, password: string) => {
-    const res = await postApi<User>('login', { identifier: email, password: password }, false)
-    if (res.success && res.data) {
-      Cookies.set('isAuthenticated', 'true', { expires: 7 })
-      Cookies.set('role', JSON.stringify(res.data.role), { expires: 7 })
-      Cookies.set("user", JSON.stringify(res.data), { expires: 7 })
+  const login = async (email: string, password: string): Promise<LoginResponse | null> => {
+    // const res = await postApi<LoginResponse>('/auth/local', { identifier: email, password: password }, false)
+    const res = await SLogin({ email, password })
+    if (res.success && res.user?.user) {
+
       setIsAuthenticated(true)
-      setUserRole(res.data.role.name)
+      setUserRole("authenticated")
+      setUser(res.user.user)
+      return res.user
+    }
+    return null
+  }
+
+  const logout = async () => {
+    const res = await SLogout()
+    if (res.successs) {
+      setIsAuthenticated(false)
+      setUserRole(null)
+      // router.push('/')
     }
   }
 
-  const logout = () => {
-    Cookies.remove('isAuthenticated')
-    Cookies.remove('userRole')
-    setIsAuthenticated(false)
-    setUserRole(null)
-    router.push('/auth')
-  }
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, userRole, user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )

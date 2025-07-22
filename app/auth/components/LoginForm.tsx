@@ -25,7 +25,7 @@ const LoginForm = () => {
         try {
             const result = await login({ email, password })
 
-            if (result.success) {
+            if (result.success && result.user?.user.role.type === "admin") {
                 router.push("/dashboard")
             } else {
                 toast.error("Login failed")

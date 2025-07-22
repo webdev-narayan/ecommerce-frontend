@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../u
 import { Switch } from "../ui/switch"
 
 export function AddressSelection() {
-  const [showAddressDialog, setShowAddressDialog] = useState(false)
+  const [showAddressSheet, setShowAddressSheet] = useState(false)
   const { addresses, selectedAddress, setSelectedAddress, addAddress } = useAddress()
 
   const handleAddAddress = (formData: FormData) => {
@@ -32,7 +32,7 @@ export function AddressSelection() {
     }
 
     addAddress(newAddress)
-    setShowAddressDialog(false)
+    setShowAddressSheet(false)
   }
 
   return (
@@ -68,9 +68,11 @@ export function AddressSelection() {
 
       <Sheet>
         <SheetTrigger>
-          <Button variant="outline" className="w-full mt-4 bg-transparent">
+          {/* <Button variant="outline" className="w-full mt-4 bg-transparent"> */}
+          <div className="">
             Add New Address
-          </Button>
+          </div>
+          {/* </Button> */}
         </SheetTrigger>
         <SheetContent className="w-full sm:max-w-md">
           <SheetHeader>

@@ -340,6 +340,9 @@ import { useCart } from "@/lib/cart-context"
 import { CartItems } from "./cart-items"
 import { CheckoutFlow } from "./checkout-flow"
 import { CheckoutSuccess } from "./checkout-success"
+import { CouponProvider } from "@/contexts/coupon-context"
+import { PaymentProvider } from "@/contexts/payment-context"
+import { AddressProvider } from "@/contexts/address-context"
 
 type CheckoutStep = "cart" | "checkout" | "success"
 
@@ -402,18 +405,24 @@ export function CartSheet() {
               </Link>
             </div>
           ) : (
-            <>
+            <CouponProvider>
               {currentStep === "cart" && (
-                <CartItems onProceedToCheckout={() => handleStepChange("checkout")} onClose={handleClose} />
+                <PaymentProvider>
+                  <CartItems onProceedToCheckout={() => handleStepChange("checkout")} onClose={handleClose} />
+                </PaymentProvider>
               )}
               {currentStep === "checkout" && (
-                <CheckoutFlow
-                  onSuccess={(data) => handleStepChange("success", data)}
-                  onBack={() => handleStepChange("cart")}
-                />
+                <PaymentProvider>
+                  <AddressProvider>
+                    <CheckoutFlow
+                      onSuccess={(data) => handleStepChange("success", data)}
+                      onBack={() => handleStepChange("cart")}
+                    />
+                  </AddressProvider>
+                </PaymentProvider>
               )}
               {currentStep === "success" && <CheckoutSuccess orderData={orderData} onClose={handleClose} />}
-            </>
+            </CouponProvider>
           )}
         </div>
       </SheetContent>

@@ -5,7 +5,6 @@ import { Toaster } from "sonner"
 import { Header } from './../components/layout/header';
 import { Footer } from './../components/layout/footer';
 import { AuthProvider } from "@/contexts/auth-context";
-import Head from "next/head";
 import InstallPwaPrompt from "@/components/install-pwa";
 
 const inter = Inter({ subsets: ["latin"] })
@@ -13,16 +12,14 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "StyleStore - Your Fashion Destination",
   description: "Discover the latest trends in fashion and style",
-  generator: 'v0.dev'
+  generator: 'v0.dev',
+  manifest: "/manifest.json"
 }
 
 export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <Head>
-        <link rel="manifest" href="/manifest.json" />
-      </Head>
       <body className={inter.className}>
         <InstallPwaPrompt />
         <AuthProvider>

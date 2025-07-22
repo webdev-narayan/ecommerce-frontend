@@ -7,30 +7,47 @@ import { useCart } from "@/lib/cart-context"
 import { AddressSelection } from "./address-selection"
 import { PaymentSelection } from "./payment-selection"
 import { OrderSummary } from "./order-summary"
+import { CreateOrderType, RazorpayCheckout } from "../checkout"
+import { postApi } from "@/lib/api"
 
 interface CheckoutFlowProps {
     onSuccess: (orderData: any) => void
     onBack: () => void
 }
 
+interface CheckoutPayload {
+    product_variants: { id: number, quantity: number }[],
+    address_id: number,
+    payment_method: "PREPAID" | "COD",
+    coupon_code?: string;
+    customer_name?: string;
+    customer_email?: string;
+    customer_phone?: string;
+}
+
 export function CheckoutFlow({ onSuccess, onBack }: CheckoutFlowProps) {
     const [isProcessing, setIsProcessing] = useState(false)
-    const { clearCart } = useCart()
+    const { clearCart, getTotalPrice, getTotalItems, items } = useCart()
 
-    const handlePlaceOrder = async () => {
+
+    console.log(getTotalItems(), items)
+    const handlePlaceOrder = async (): Promise<CreateOrderType | null> => {
         setIsProcessing(true)
-
-        // Simulate order processing
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-
-        const orderData = {
-            orderId: `ORD-${Date.now()}`,
-            timestamp: new Date().toISOString(),
+        const payload: CheckoutPayload = {
+            address_id: 1,
+            product_variants: items.map((item) => {
+                return {
+                    id: item.id,
+                    quantity: item.cart_quantity,
+                }
+            }),
+            payment_method: "PREPAID",
         }
-
+        const res = await postApi<CreateOrderType>("/orders/checkout", payload, true)
         clearCart()
-        onSuccess(orderData)
+        onSuccess("")
         setIsProcessing(false)
+        return res.data || null
     }
 
     return (
@@ -52,9 +69,10 @@ export function CheckoutFlow({ onSuccess, onBack }: CheckoutFlowProps) {
                 <OrderSummary />
 
                 {/* Place Order Button */}
-                <Button className="w-full" size="lg" onClick={handlePlaceOrder} disabled={isProcessing}>
+                {/* <Button className="w-full" size="lg" onClick={handlePlaceOrder} disabled={isProcessing}>
                     {isProcessing ? "Processing..." : "Place Order"}
-                </Button>
+                </Button> */}
+                <RazorpayCheckout createOrder={handlePlaceOrder} />
             </div>
         </div>
     )

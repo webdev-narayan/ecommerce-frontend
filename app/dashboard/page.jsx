@@ -100,23 +100,27 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   {[
                     {
+                      id: 1,
                       name: "Dinesh",
                       email: "dins@gmail.com"
                     },
                     {
+                      id: 2,
                       name: "Mitali",
                       email: "mitali002@gmail.com"
                     },
                     {
+                      id: 3,
                       name: "Avi Raj",
                       email: "araj998@gmail.com"
                     },
                     {
+                      id: 4,
                       name: "Shiv",
                       email: "shivss343@gmail.com"
                     },
                   ].map((customer) => (
-                    <div key={customer} className="flex items-center">
+                    <div key={customer.id} className="flex items-center">
                       <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center mr-3">
                         <Users className="h-4 w-4 text-gray-500" />
                       </div>

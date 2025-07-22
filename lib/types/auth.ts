@@ -5,20 +5,27 @@ export enum RolesEnum {
   DRIVER = "DRIVER"
 }
 
+export interface User {
+  id: number;
+  documenId: string;
+  name: string;
+  email: string;
+  role: Role;
+  profile?: Media;
+  username: string
+  confirmed: boolean
+  blocked: boolean
+  phone: string
+
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Role {
   id: number
   slug: string
-  name: RolesEnum
-}
-
-export interface User {
-  id: string
-  slug: string
-  email: string
-  name: string
-  roles: Role[],
-  userInfo: unknown
-  profile?: Media
+  name: RolesEnum,
+  type: string
 }
 
 export interface LoginCredentials {
@@ -30,4 +37,9 @@ export interface AuthState {
   user: User | null
   isLoading: boolean
   error: string | null
+}
+
+export interface LoginResponse {
+  user: User,
+  jwt: string
 }

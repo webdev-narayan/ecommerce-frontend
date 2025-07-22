@@ -15,12 +15,10 @@ export async function login(credentials: LoginCredentials) {
     password: credentials.password,
   }, false)
 
-  console.log(response)
-  // Mock authentication - replace with actual auth logic
   if (response.success && response.data) {
-    console.log(response.data)
     const cookieStore = await cookies()
-    cookieStore.set("admin-auth-token", response.data.jwt, {
+    const keyName = "auth-token"
+    cookieStore.set(keyName, response.data.jwt, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -34,13 +32,14 @@ export async function login(credentials: LoginCredentials) {
 
 export async function logout() {
   const cookieStore = await cookies()
-  cookieStore.delete("admin-auth-token")
-  redirect("/auth")
+  cookieStore.delete("auth-token")
+  return { successs: true }
+  // redirect("/auth")
 }
 
 export async function getUser(): Promise<User | null> {
   const cookieStore = await cookies();
-  if (!cookieStore.get("admin-auth-token")?.value) {
+  if (!cookieStore.get("auth-token")?.value) {
     return null
   }
 
@@ -64,7 +63,7 @@ export async function getHeaders(config: HeaderConfig): Promise<AxiosRequestConf
   const data = {}
   if (config.token) {
     Object.assign(data, {
-      Authorization: `Bearer ${cookieStore.get("admin-auth-token")?.value}`,
+      Authorization: `Bearer ${cookieStore.get("auth-token")?.value}`,
       "Content-Type": "application/json",
     });
   } else {
