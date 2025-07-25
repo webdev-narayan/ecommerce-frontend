@@ -1,4 +1,8 @@
+import { Address } from "@/lib/types/address";
 import { Product, ProductVariant } from "../products/product.type";
+import { User } from "@/lib/types/auth";
+import { PaymentMethods } from "@/lib/types/type";
+import { Coupon } from "../coupons/coupon.type";
 
 export interface Order {
     id: number;
@@ -6,12 +10,14 @@ export interface Order {
     user: User
     order_id: string;
     total_amount: number;
+    subtotal_amount: number;
+    discount: number;
     order_status: OrderStatus;
     order_products: OrderProduct[];
     shipping_address: Address;
-    billing_address: Address;
+    billing_address?: Address;
     is_shipping_billing: boolean;
-    coupon: string;
+    coupon: Coupon;
     notes: string;
     order_date: Date;
     deliver_date: Date;
@@ -22,6 +28,8 @@ export interface Order {
     customer_phone: string;
 
     payment_status: PaymentStatus;
+    payment_method: PaymentMethods;
+    payment_gateway: "RAZORPAY";
 
     createdAt: string;
     updatedAt: string;
@@ -49,20 +57,4 @@ export enum PaymentStatus {
     PAID = "PAID",
     UNPAID = "UNPAID",
     REFUNDED = "REFUNDED",
-}
-
-interface User {
-    id: number;
-    documentId: string;
-    name: string;
-    email: string;
-    role: string;
-}
-
-interface Address {
-    address: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
 }

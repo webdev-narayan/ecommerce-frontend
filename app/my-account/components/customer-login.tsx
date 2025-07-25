@@ -10,7 +10,6 @@ import { toast } from 'sonner'
 
 
 const CustomerLogin = () => {
-    const router = useRouter()
     const [showPassword, setShowPassword] = useState(false)
     const { login, loading } = useAuth()
     async function handleSubmit(formData: FormData) {

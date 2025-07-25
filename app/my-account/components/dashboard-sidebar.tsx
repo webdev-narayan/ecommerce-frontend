@@ -4,9 +4,10 @@ import { useState } from "react"
 import { User, Package, MapPin, Settings, LogOut, Menu } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { mockUser } from "@/lib/mock-api"
+import { cn, mediaUrlGenerator } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useAuth } from "@/contexts/auth-context"
+import { redirect } from "next/navigation"
 
 interface DashboardSidebarProps {
   activeSection: string
@@ -45,23 +46,24 @@ function SidebarContent({
   onSectionChange: (section: string) => void
   onItemClick?: () => void
 }) {
+
+  const { user, logout } = useAuth()
+
+
   return (
     <div className="flex flex-col h-full bg-slate-50/50 border-r border-slate-200">
       {/* Header */}
       <div className="p-4 border-b border-slate-200">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={mockUser.avatar || "/placeholder.svg"} />
+            <AvatarImage src={mediaUrlGenerator(user?.profile?.url)} />
             <AvatarFallback className="bg-slate-200 text-slate-700">
-              {mockUser.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
+              {user?.name}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-900 truncate">{mockUser.name}</p>
-            <p className="text-xs text-slate-500 truncate">{mockUser.email}</p>
+            <p className="text-sm font-medium text-slate-900 truncate">{user?.name}</p>
+            <p className="text-xs text-slate-500 truncate">{user?.email}</p>
           </div>
         </div>
       </div>
@@ -97,8 +99,7 @@ function SidebarContent({
           variant="ghost"
           className="w-full justify-start gap-3 h-10 px-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           onClick={() => {
-            console.log("Logging out...")
-            onItemClick?.()
+            logout()
           }}
         >
           <LogOut className="h-4 w-4 shrink-0" />

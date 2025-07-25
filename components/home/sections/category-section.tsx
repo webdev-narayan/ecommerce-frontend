@@ -8,6 +8,7 @@ import { BannerPlacement } from '@/lib/types/type'
 import { mediaUrlGenerator } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import { redirect } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
 const CategorySection = () => {
@@ -80,7 +81,7 @@ const CategorySection = () => {
                             ))}
                 </div>
                 <div className="text-center mt-12">
-                    <Button variant="outline" size="lg">
+                    <Button onClick={() => redirect("/categories")} variant="outline" size="lg">
                         View All Categories
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>

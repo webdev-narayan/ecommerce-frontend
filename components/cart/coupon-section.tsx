@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { useCart } from "@/lib/cart-context"
 import { useCoupon } from "@/contexts/coupon-context"
 import { toast } from "sonner"
+import { Badge } from "../ui/badge"
+import CouponApplied from "./coupon-applied"
 
 
 export function CouponSection() {
@@ -43,16 +45,21 @@ export function CouponSection() {
         Coupon Code
       </Label>
 
+
       {appliedCoupon ? (
-        <div className="flex items-center justify-between p-2 py-1 bg-green-50 border border-dashed border-green-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">{appliedCoupon.code}</span>
-          </div>
-          <Button variant="ghost" size="sm" onClick={removeCoupon} className="text-green-600 hover:text-green-800 cursor-pointer">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        // <div className="flex items-center justify-between p-2 py-1 bg-green-50 border border-dashed border-green-200 rounded-lg">
+        //   <div className="flex items-center gap-2">
+        //     <Check className="h-4 w-4 text-green-600" />
+        //     <span className="text-sm font-medium text-green-800 bg-green-200 rounded-full px-2 py-0.5">{appliedCoupon.code}</span>
+        //     <span className="text-sm font-medium text-green-800">
+        //       Applied Successfuly
+        //     </span>
+        //   </div>
+        //   <Button variant="ghost" size="sm" onClick={removeCoupon} className="text-green-600 hover:text-green-800 cursor-pointer">
+        //     <X className="h-4 w-4" />
+        //   </Button>
+        // </div>
+        <CouponApplied coupon={appliedCoupon} removeCoupon={removeCoupon} />
       ) : (
         <div className="">
           <div className="flex gap-2">

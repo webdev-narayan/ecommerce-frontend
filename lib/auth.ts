@@ -39,11 +39,17 @@ export async function logout() {
 
 export async function getUser(): Promise<User | null> {
   const cookieStore = await cookies();
-  if (!cookieStore.get("auth-token")?.value) {
+
+  const config = await getHeaders({ token: true })
+  // if (!cookieStore.get("auth-token")?.value) {
+  //   return null
+  // }
+  if (!config.headers?.Authorization) {
+    console.log("no me api auth found")
     return null
   }
 
-  const meReponse = await getApi<User>("/users/me", true)
+  const meReponse = await getApi<User>("/users/me?populate[0]=profile&populate[1]=role", true)
   if (meReponse.success && meReponse.data) {
     return meReponse.data
   } else {

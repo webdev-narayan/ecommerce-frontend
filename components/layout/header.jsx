@@ -135,20 +135,29 @@
 // }
 
 "use client"
-import { Search, Menu, Phone, Mail, Facebook, Twitter, Instagram, User, Heart } from "lucide-react"
+import { Search, Menu, Phone, Mail, User, Heart, Facebook, Twitter, Instagram } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { CartSheet } from "../cart/cart-sheet"
 import { redirect, usePathname } from "next/navigation"
 import { noHeaderFooterRoutes } from "@/lib/constants"
+import { useGlobal } from "@/contexts/global-context"
+import { useState } from "react"
 
 export function Header() {
   const path = usePathname()
+  const { publicInfo, loading } = useGlobal()
+  const [search, setSearch] = useState("")
   const hideHeaderFooter = noHeaderFooterRoutes.some((route) => path.startsWith(route))
-
   if (hideHeaderFooter) return null
+
+  if (loading) return <header>
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="spinner-border text-gray-400" role="status" />
+    </div>
+  </header>
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -158,11 +167,11 @@ export function Header() {
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
               <Phone className="w-4 h-4 mr-1" />
-              +1 (555) 123-4567
+              {publicInfo?.phone.includes("+91") ? publicInfo?.phone : "+91 " + publicInfo?.phone}
             </span>
             <span className="flex items-center">
               <Mail className="w-4 h-4 mr-1" />
-              support@store.com
+              {publicInfo?.email}
             </span>
           </div>
           <div className="flex items-center space-x-4">
@@ -184,11 +193,14 @@ export function Header() {
           {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden shrink-0">
+              <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] sm:w-[320px]">
+              <SheetTitle>
+                <span className="font-medium">{publicInfo.store_name}</span>
+              </SheetTitle>
               <MobileNavigation />
             </SheetContent>
           </Sheet>
@@ -196,7 +208,7 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center min-w-0">
             <Link href="/">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">StyleStore</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{publicInfo.store_name}</h1>
             </Link>
           </div>
 
@@ -220,7 +232,16 @@ export function Header() {
           <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input placeholder="Search products..." className="pl-10 bg-gray-50 border-gray-200" />
+              <Input onInput={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    redirect(`/shop?search=${search}`)
+                  }
+                }}
+                type="search"
+                placeholder="Search products..."
+                className="pl-10 bg-gray-50 border-gray-200" />
             </div>
           </div>
 

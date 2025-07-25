@@ -8,133 +8,88 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
-import type { Address } from "@/lib/types/type"
-import { api } from "@/lib/mock-api"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, } from "@/components/ui/dialog"
+import { deleteApi, getApi, postApi, putApi } from "@/lib/api"
+import { Address, CreateAddress } from "@/lib/types/address"
+import { useAuth } from "@/contexts/auth-context"
+import AddressForm from "./address-form"
+
+const INITIAL_VALUE = {
+  documentId: "",
+  name: "",
+  phone: "",
+  email: "",
+  line1: "",
+  line2: "",
+  city: "",
+  state: "",
+  pincode: "",
+  country: "India",
+  is_default: false,
+}
 
 export function AddressesSection() {
   const [addresses, setAddresses] = useState<Address[]>([])
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
-  const [isAddingNew, setIsAddingNew] = useState(false)
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null)
-  const [saving, setSaving] = useState(false)
-  const { toast } = useToast()
+  const [openForm, setOpenForm] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  // const { addAddress, addresses, updateAddress, removeAddress } = useAddress()
 
-  const [newAddress, setNewAddress] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    line1: "",
-    line2: "",
-    city: "",
-    state: "",
-    pincode: "",
-    country: "India",
-    is_default: false,
-  })
+  const [addressFormData, setAddressFormData] = useState<CreateAddress>(INITIAL_VALUE)
+
+  const fetchAddresses = async () => {
+    setLoading(true)
+    if (!user) return
+    const query = new URLSearchParams()
+    query.append("filters[user][id][$eq]", user?.id.toString())
+    const res = await getApi<{ data: Address[] }>(`/addresses?${query.toString()}`, true)
+    setAddresses(res.data?.data ?? [])
+    setLoading(false)
+  }
 
   useEffect(() => {
-    loadAddresses()
-  }, [])
+    fetchAddresses()
+  }, [user])
 
-  const loadAddresses = async () => {
-    try {
-      setLoading(true)
-      const data = await api.getAddresses()
-      setAddresses(data)
-    } catch (error) {
-      console.error("Failed to load addresses:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load addresses",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
+  const handleSubmit = async () => {
+    if (!user) return
+    if (isEditing) {
+      const payload: any = { ...addressFormData };
+      delete payload.documentId;
+      const res = await putApi<{ data: Address }>(`/addresses/${addressFormData.documentId}`, payload, true)
+      if (res.data?.data) setAddresses([...addresses.filter(item => item.documentId !== addressFormData.documentId), res.data?.data].map(item => ({ ...item, is_default: item.documentId === addressFormData.documentId })))
+      setIsEditing(false)
+    } else {
+      const res = await postApi<{ data: Address }>("/addresses", { ...addressFormData, user: user.id }, true)
+      if (res.data?.data) setAddresses([...addresses, res.data?.data])
     }
+    setOpenForm(false)
   }
 
-  const handleAddAddress = async () => {
-    try {
-      setSaving(true)
-      const address = await api.addAddress(newAddress)
-      setAddresses([...addresses, address])
-      setNewAddress({
-        name: "",
-        phone: "",
-        email: "",
-        line1: "",
-        line2: "",
-        city: "",
-        state: "",
-        pincode: "",
-        country: "India",
-        is_default: false,
-      })
-      setIsAddingNew(false)
-      toast({
-        title: "Success",
-        description: "Address added successfully",
-      })
-    } catch (error) {
-      console.error("Failed to add address:", error)
-      toast({
-        title: "Error",
-        description: "Failed to add address",
-        variant: "destructive",
-      })
-    } finally {
-      setSaving(false)
-    }
+  const handleDelete = async (documentId: string) => {
+    if (!user) return
+    const res = await deleteApi(`/addresses/${documentId}`)
+    if (res.success) setAddresses(addresses.filter((address) => address.documentId !== documentId));
   }
 
-  const handleSetDefault = async (id: number) => {
-    try {
-      await api.setDefaultAddress(id)
-      setAddresses(
-        addresses.map((addr) => ({
-          ...addr,
-          is_default: addr.id === id,
-        })),
-      )
-      toast({
-        title: "Success",
-        description: "Default address updated",
-      })
-    } catch (error) {
-      console.error("Failed to set default address:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update default address",
-        variant: "destructive",
-      })
-    }
+
+  const handleEditClick = async ({ id, user, createdAt, updatedAt, ...rest }: Address) => {
+    console.log(rest)
+    setIsEditing(true)
+    setAddressFormData(rest)
+    setOpenForm(true)
   }
 
-  const handleDeleteAddress = async (id: number) => {
-    try {
-      await api.deleteAddress(id)
-      setAddresses(addresses.filter((addr) => addr.id !== id))
-      toast({
-        title: "Success",
-        description: "Address deleted successfully",
-      })
-    } catch (error) {
-      console.error("Failed to delete address:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete address",
-        variant: "destructive",
-      })
+  const handleSetDefault = async (documentId: string) => {
+    const res = await putApi<{ data: Address }>(`/addresses/${documentId}`, { is_default: true }, true)
+    if (res.data?.data) {
+      setAddresses(addresses.map((address) => {
+        if (address.documentId === documentId) {
+          return { ...address, is_default: true }
+        }
+        return { ...address, is_default: false }
+      }))
     }
   }
 
@@ -163,140 +118,14 @@ export function AddressesSection() {
           <h2 className="text-2xl font-semibold text-slate-900">Addresses</h2>
           <p className="text-slate-600 mt-1">Manage your delivery addresses</p>
         </div>
-        <Dialog open={isAddingNew} onOpenChange={setIsAddingNew}>
-          <DialogTrigger asChild>
-            <Button className="bg-slate-900 hover:bg-slate-800 w-full sm:w-auto">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Address
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Add New Address</DialogTitle>
-              <DialogDescription>Add a new delivery address to your account</DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-name" className="text-sm font-medium">
-                  Full Name
-                </Label>
-                <Input
-                  id="new-name"
-                  value={newAddress.name}
-                  onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-phone" className="text-sm font-medium">
-                  Phone
-                </Label>
-                <Input
-                  id="new-phone"
-                  value={newAddress.phone}
-                  onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="new-email" className="text-sm font-medium">
-                  Email
-                </Label>
-                <Input
-                  id="new-email"
-                  type="email"
-                  value={newAddress.email}
-                  onChange={(e) => setNewAddress({ ...newAddress, email: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="new-line1" className="text-sm font-medium">
-                  Address Line 1
-                </Label>
-                <Input
-                  id="new-line1"
-                  value={newAddress.line1}
-                  onChange={(e) => setNewAddress({ ...newAddress, line1: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="new-line2" className="text-sm font-medium">
-                  Address Line 2 (Optional)
-                </Label>
-                <Input
-                  id="new-line2"
-                  value={newAddress.line2}
-                  onChange={(e) => setNewAddress({ ...newAddress, line2: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-city" className="text-sm font-medium">
-                  City
-                </Label>
-                <Input
-                  id="new-city"
-                  value={newAddress.city}
-                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-state" className="text-sm font-medium">
-                  State
-                </Label>
-                <Input
-                  id="new-state"
-                  value={newAddress.state}
-                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-pincode" className="text-sm font-medium">
-                  Pincode
-                </Label>
-                <Input
-                  id="new-pincode"
-                  value={newAddress.pincode}
-                  onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-country" className="text-sm font-medium">
-                  Country
-                </Label>
-                <Input
-                  id="new-country"
-                  value={newAddress.country}
-                  onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })}
-                  className="border-slate-200"
-                />
-              </div>
-              <div className="flex items-center space-x-2 md:col-span-2">
-                <Switch
-                  id="new-default"
-                  checked={newAddress.is_default}
-                  onCheckedChange={(checked) => setNewAddress({ ...newAddress, is_default: checked })}
-                />
-                <Label htmlFor="new-default" className="text-sm">
-                  Set as default address
-                </Label>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddingNew(false)} disabled={saving}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddAddress} disabled={saving}>
-                {saving ? "Adding..." : "Add Address"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <AddressForm
+          addressFormData={addressFormData}
+          handleSubmit={handleSubmit}
+          open={openForm}
+          setAddressFormData={setAddressFormData}
+          setOpenForm={setOpenForm}
+          isEditing={isEditing}
+        />
       </div>
 
       {addresses.length === 0 ? (
@@ -322,13 +151,28 @@ export function AddressesSection() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="border-slate-200 bg-transparent">
+
+                    {!address.is_default && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSetDefault(address.documentId!)}
+                        className="border-slate-200"
+                      >
+                        Set as Default
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => handleEditClick(address)}
+                      variant="outline"
+                      size="sm"
+                      className="border-slate-200 bg-transparent">
                       <Edit3 className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteAddress(address.id!)}
+                      onClick={() => handleDelete(address.documentId)}
                       className="border-slate-200 text-red-600 hover:text-red-700 hover:border-red-200"
                     >
                       <Trash2 className="h-3 w-3" />
@@ -351,18 +195,6 @@ export function AddressesSection() {
                     <span className="truncate">{address.email}</span>
                   </div>
                 </div>
-                {!address.is_default && (
-                  <div className="mt-4 pt-3 border-t border-slate-200">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSetDefault(address.id!)}
-                      className="border-slate-200"
-                    >
-                      Set as Default
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))}

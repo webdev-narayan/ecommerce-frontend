@@ -1,3 +1,4 @@
+
 export interface Media {
     id: number;
     documentId: string;
@@ -50,38 +51,8 @@ export interface User {
     avatar?: string
 }
 
-export interface Order {
-    user: User
-    order_id: string
-    total_amount: number
-    order_status: OrderStatus
-    order_products: OrderProduct[]
-    shipping_address: Address
-    billing_address?: Address
-    coupon?: Coupon
-    notes: string
-    order_date: Date
-    deliver_date: Date
-    is_shipping_billing: boolean
-    customer_name: string
-    customer_phone: string
-    payment_status: PaymentStatus
-    payment_method: PaymentMethods
-    customer_email: string
-}
 
-export interface OrderProduct {
-    id?: number
-    documentId: string
-    order: Order
-    product: Product
-    product_variant: ProductVariant
-    quantity: number
-    price: number
-    total_amount: number
-    createdAt?: string
-    updatedAt?: string
-}
+
 
 export interface Product {
     id?: number
@@ -108,22 +79,7 @@ export interface ProductVariant {
     product: Product
 }
 
-export interface Address {
-    id?: number
-    name: string
-    phone: string
-    email: string
-    line1: string
-    line2?: string
-    city: string
-    state: string
-    pincode: string
-    country: string
-    is_default: boolean
-    user: User
-    createdAt?: string
-    updatedAt?: string
-}
+
 
 export interface Coupon {
     id: number

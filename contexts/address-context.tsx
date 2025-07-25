@@ -1,65 +1,62 @@
 "use client"
 
-import { Address } from "@/types/address"
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { getApi, postApi } from "@/lib/api"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { useAuth } from "./auth-context"
+import { Address, CreateAddress } from "@/lib/types/address"
 
 
 interface AddressContextType {
   addresses: Address[]
-  selectedAddress: number
-  setSelectedAddress: (id: number) => void
-  addAddress: (address: Address) => void
-  removeAddress: (id: number) => void
-  updateAddress: (id: number, updatedAddress: Partial<Address>) => void
+  selectedAddress: string
+  setSelectedAddress: (id: string) => void
+  addAddress: (address: CreateAddress) => void
+  removeAddress: (id: string) => void
+  updateAddress: (id: string, updatedAddress: Partial<Address>) => void
 }
 
 const AddressContext = createContext<AddressContextType | null>(null)
 
-const defaultAddresses: Address[] = [
-  {
-    id: 1,
-    name: "Home",
-    email: "home@gmail.com",
-    line1: "123 Main Street, Apartment 4B",
-    city: "Mumbai",
-    state: "Maharashtra",
-    country: "India",
-    pincode: "400001",
-    phone: "+91 9876543210",
-    is_default: true,
-  },
-  {
-    id: 2,
-    name: "Office",
-    email: "home@gmail.com",
-    line1: "123 Main Street, Apartment 4B",
-    city: "Mumbai",
-    state: "Maharashtra",
-    country: "India",
-    pincode: "400001",
-    phone: "+91 9876543210",
-    is_default: true,
-  },
-]
 
 interface AddressProviderProps {
   children: ReactNode
 }
 
 export function AddressProvider({ children }: AddressProviderProps) {
-  const [addresses, setAddresses] = useState<Address[]>(defaultAddresses)
-  const [selectedAddress, setSelectedAddress] = useState<number>(1)
-
-  const addAddress = (address: Address) => {
-    setAddresses((prev) => [...prev, address])
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [selectedAddress, setSelectedAddress] = useState<string>("1")
+  const { user } = useAuth();
+  async function fetchAddresses() {
+    if (!user) return;
+    const res = await getApi<{ data: Address[] }>(`/addresses?filters[user][id][$eq]=${user.id}`, true)
+    if (res.data) {
+      setAddresses(res.data.data)
+      const defaultAddress = res.data.data.find((addr) => addr.is_default)
+      if (defaultAddress) {
+        setSelectedAddress(defaultAddress?.id?.toString())
+      } else {
+        setSelectedAddress(addresses[0]?.id.toString())
+      }
+    }
   }
 
-  const removeAddress = (id: number) => {
-    setAddresses((prev) => prev.filter((addr) => addr.id !== id))
+  useEffect(() => {
+    fetchAddresses()
+  }, [user])
+
+  const addAddress = async (address: CreateAddress) => {
+    const res = await postApi<{ data: Address }>("/addresses", address, true)
+    if (res.data?.data) {
+      setAddresses((prev) => [...prev, res.data?.data as Address])
+    }
   }
 
-  const updateAddress = (id: number, updatedAddress: Partial<Address>) => {
-    setAddresses((prev) => prev.map((addr) => (addr.id === id ? { ...addr, ...updatedAddress } : addr)))
+  const removeAddress = (id: string) => {
+    setAddresses((prev) => prev.filter((addr) => addr.id?.toString() !== id))
+  }
+
+  const updateAddress = (id: string, updatedAddress: Partial<Address>) => {
+    setAddresses((prev) => prev.map((addr) => (addr.id?.toString() === id ? { ...addr, ...updatedAddress } : addr)))
   }
 
   return (

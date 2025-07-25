@@ -7,7 +7,7 @@ export enum RolesEnum {
 
 export interface User {
   id: number;
-  documenId: string;
+  documentId: string;
   name: string;
   email: string;
   role: Role;

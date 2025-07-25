@@ -9,10 +9,14 @@ import { PaymentSelection } from "./payment-selection"
 import { OrderSummary } from "./order-summary"
 import { CreateOrderType, RazorpayCheckout } from "../checkout"
 import { postApi } from "@/lib/api"
+import { useCoupon } from "@/contexts/coupon-context"
+import { usePayment } from "@/contexts/payment-context"
+import { useAddress } from "@/contexts/address-context"
 
 interface CheckoutFlowProps {
     onSuccess: (orderData: any) => void
     onBack: () => void
+    handleClose: () => void
 }
 
 interface CheckoutPayload {
@@ -25,29 +29,40 @@ interface CheckoutPayload {
     customer_phone?: string;
 }
 
-export function CheckoutFlow({ onSuccess, onBack }: CheckoutFlowProps) {
+export function CheckoutFlow({ onSuccess, onBack, handleClose }: CheckoutFlowProps) {
     const [isProcessing, setIsProcessing] = useState(false)
     const { clearCart, getTotalPrice, getTotalItems, items } = useCart()
+    const { appliedCoupon } = useCoupon()
+    const { selectedPaymentGateway } = usePayment()
+    const { selectedAddress } = useAddress()
 
-
-    console.log(getTotalItems(), items)
     const handlePlaceOrder = async (): Promise<CreateOrderType | null> => {
         setIsProcessing(true)
         const payload: CheckoutPayload = {
-            address_id: 1,
+            address_id: Number(selectedAddress),
             product_variants: items.map((item) => {
                 return {
                     id: item.id,
                     quantity: item.cart_quantity,
                 }
             }),
-            payment_method: "PREPAID",
+            payment_method: selectedPaymentGateway?.id as "PREPAID" | "COD",
+            ...(appliedCoupon && { coupon_code: appliedCoupon.code }),
         }
         const res = await postApi<CreateOrderType>("/orders/checkout", payload, true)
         clearCart()
         onSuccess("")
         setIsProcessing(false)
         return res.data || null
+    }
+
+    const handleVerifyOrder = async (orderData: CreateOrderType) => {
+        const res = await postApi<{ success: boolean }>("/orders/verify", orderData, true)
+        if (res.data?.success) {
+            console.log(res.data)
+        } else {
+            console.log("payment failed")
+        }
     }
 
     return (
@@ -72,7 +87,11 @@ export function CheckoutFlow({ onSuccess, onBack }: CheckoutFlowProps) {
                 {/* <Button className="w-full" size="lg" onClick={handlePlaceOrder} disabled={isProcessing}>
                     {isProcessing ? "Processing..." : "Place Order"}
                 </Button> */}
-                <RazorpayCheckout createOrder={handlePlaceOrder} />
+                <RazorpayCheckout
+                    createOrder={handlePlaceOrder}
+                    verifyOrder={handleVerifyOrder}
+                    onModalOpen={handleClose}
+                />
             </div>
         </div>
     )

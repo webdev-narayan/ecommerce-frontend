@@ -6,6 +6,7 @@ import { Header } from './../components/layout/header';
 import { Footer } from './../components/layout/footer';
 import { AuthProvider } from "@/contexts/auth-context";
 import InstallPwaPrompt from "@/components/install-pwa";
+import { GlobalProvider } from "@/contexts/global-context";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -13,7 +14,7 @@ export const metadata = {
   title: "StyleStore - Your Fashion Destination",
   description: "Discover the latest trends in fashion and style",
   generator: 'v0.dev',
-  manifest: "/manifest.json"
+  manifest: "/manifest.json",
 }
 
 export default function RootLayout({ children }) {
@@ -23,12 +24,14 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <InstallPwaPrompt />
         <AuthProvider>
-          <CartProvider>
-            <Header />
-            {children}
-            <Footer />
-            <Toaster position="bottom-right" richColors />
-          </CartProvider>
+          <GlobalProvider>
+            <CartProvider>
+              <Header />
+              {children}
+              <Footer />
+              <Toaster position="bottom-right" richColors />
+            </CartProvider>
+          </GlobalProvider>
         </AuthProvider>
       </body>
     </html>

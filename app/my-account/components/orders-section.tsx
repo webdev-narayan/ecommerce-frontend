@@ -15,16 +15,15 @@ import {
   ShoppingBag,
   Package,
 } from "lucide-react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
-import { Order } from "@/lib/types/type"
-import { api } from "@/lib/mock-api"
+import { getApi } from "@/lib/api"
+import { useAuth } from "@/contexts/auth-context"
+import moment from "moment"
+import { Order, OrderStatus } from "@/app/dashboard/orders/Order.type"
+import OrderViewModal from "./order-modal"
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -77,20 +76,35 @@ export function OrdersSection() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [orderStatus, setOrderStatus] = useState("all")
+  const [debouncedSearchedQuery, setDebouncedSearchedQuery] = useState("")
+  const { user } = useAuth()
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchedQuery(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   useEffect(() => {
     loadOrders()
-  }, [searchTerm, statusFilter])
+  }, [orderStatus, user, debouncedSearchedQuery])
 
   const loadOrders = async () => {
     try {
       setLoading(true)
-      const data = await api.getOrders({
-        status: statusFilter === "all" ? undefined : statusFilter,
-        search: searchTerm || undefined,
-      })
-      setOrders(data)
+      const query = new URLSearchParams();
+      if (debouncedSearchedQuery.trim()) query.append("search", debouncedSearchedQuery)
+
+      if (Object.values(OrderStatus).includes(orderStatus as OrderStatus)) {
+        query.append("order_status", orderStatus)
+      }
+      const data = await getApi<{ data: Order[] }>(`/user/orders?${query.toString()}`, true)
+      setOrders(data.data?.data ?? [])
     } catch (error) {
       console.error("Failed to load orders:", error)
     } finally {
@@ -127,23 +141,22 @@ export function OrdersSection() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
-            placeholder="Search orders..."
+            placeholder="Enter Order Id..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 border-slate-200 focus:border-slate-300"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={orderStatus} onValueChange={setOrderStatus}>
           <SelectTrigger className="w-full sm:w-[160px] border-slate-200">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Orders</SelectItem>
-            <SelectItem value="NEW">New</SelectItem>
-            <SelectItem value="ACCEPTED">Accepted</SelectItem>
-            <SelectItem value="SHIPPED">Shipped</SelectItem>
-            <SelectItem value="DELIVERED">Delivered</SelectItem>
-            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+            {Object.values(OrderStatus).map((status) => (
+              <SelectItem key={status} value={status}>{status}</SelectItem>
+
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -154,7 +167,7 @@ export function OrdersSection() {
             <Package className="h-12 w-12 text-slate-400 mb-4" />
             <p className="text-slate-600 text-center">No orders found</p>
             <p className="text-slate-500 text-sm text-center mt-1">
-              {searchTerm || statusFilter !== "all" ? "Try adjusting your filters" : "Your orders will appear here"}
+              {searchTerm || orderStatus !== "all" ? "Try adjusting your filters" : "Your orders will appear here"}
             </p>
           </CardContent>
         </Card>
@@ -168,11 +181,7 @@ export function OrdersSection() {
                     <CardTitle className="text-lg font-medium text-slate-900 truncate">{order.order_id}</CardTitle>
                     <CardDescription className="text-slate-500">
                       Ordered on{" "}
-                      {order.order_date.toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {moment(order.order_date).format("DD/MM/YYYY HH:mm A")}
                     </CardDescription>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -180,7 +189,7 @@ export function OrdersSection() {
                       {getStatusIcon(order.order_status)}
                       {order.order_status}
                     </Badge>
-                    <Dialog>
+                    {/* <Dialog>
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
@@ -264,7 +273,8 @@ export function OrdersSection() {
                           </div>
                         </div>
                       </DialogContent>
-                    </Dialog>
+                    </Dialog> */}
+                    <OrderViewModal orderData={order} />
                   </div>
                 </div>
               </CardHeader>
@@ -278,7 +288,7 @@ export function OrdersSection() {
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       <span className="truncate">
-                        Delivery: {order.deliver_date.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                        Delivery: {order.deliver_date?.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                       </span>
                     </div>
                   </div>

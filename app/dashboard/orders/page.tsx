@@ -242,7 +242,7 @@ export default function OrdersPage() {
                   <Input
                     id="name"
                     name="name"
-                    {...(isEditing && orderToAction && { value: orderToAction.coupon })}
+                    {...(isEditing && orderToAction && { value: orderToAction.coupon.code })}
                     placeholder="Enter order name"
                     required
                   />

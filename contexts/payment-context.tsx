@@ -18,8 +18,8 @@ interface PaymentContextType {
 const PaymentContext = createContext<PaymentContextType | null>(null)
 
 const defaultPaymentGateways: PaymentGateway[] = [
-  { id: "razorpay", name: "Razorpay", icon: "💳", processingFee: 0 },
-  { id: "cod", name: "COD", icon: "🪙", processingFee: 0 },
+  { id: "PREPAID", name: "Razorpay", icon: "💳", processingFee: 0 },
+  { id: "COD", name: "COD", icon: "🪙", processingFee: 0 },
 ]
 
 interface PaymentProviderProps {

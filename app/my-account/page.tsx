@@ -8,10 +8,13 @@ import { AddressesSection } from "./components/addresses-section"
 import { SettingsSection } from "./components/settings-section"
 import CustomerLogin from "./components/customer-login"
 import { useAuth } from "@/contexts/auth-context"
+import { redirect } from "next/navigation"
+import Login from "../login/page"
 
 export default function CustomerDashboard() {
     const [activeSection, setActiveSection] = useState("orders")
     const { isAuthenticated, loading } = useAuth()
+
     const renderContent = () => {
         switch (activeSection) {
             case "orders":
@@ -31,7 +34,7 @@ export default function CustomerDashboard() {
         <section className="px-4">
             {!isAuthenticated && !loading ?
                 <div className="max-w-md mx-auto mt-16 mb-12">
-                    <CustomerLogin />
+                    <Login />
                 </div>
                 : <>
                     <div className="w-full max-w-7xl mx-auto mt-10 mb-10 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">

@@ -81,8 +81,12 @@ export default function ShopPage() {
       query.append(`filters[category][id][$eq]`, searchParam.get('category') || "")
     }
 
-    if (selectedBrands.length === 0 && searchParam.get('brand') && hasClearedFilters) {
+    if (selectedBrands.length === 0 && searchParam.get('brand') && !hasClearedFilters) {
       query.append(`filters[brand][id][$eq]`, searchParam.get('brand') || "")
+    }
+
+    if (!debouncedSearchedQuery.trim() && searchParam.get('search') && !hasClearedFilters) {
+      query.append("filters[title][$containsi]", searchParam.get('search') || "");
     }
 
 
@@ -270,56 +274,6 @@ export default function ShopPage() {
                   :
                   <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6 gap-3">
                     {products.map((product) => (
-                      // <Card key={product.id} className="group cursor-pointer hover:shadow-lg transition-shadow">
-                      //   <CardContent className="p-0">
-                      //     <Link href={`/product/${product.slug}`}>
-                      //       <div className="relative overflow-hidden rounded-t-lg aspect-square border-2">
-                      //         <Image
-                      //           src={mediaUrlGenerator(product?.thumbnail?.url)}
-                      //           alt={product.title}
-                      //           width={300}
-                      //           height={250}
-                      //           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      //         />
-                      //         {product.stock && <Badge className="absolute top-2 left-2 bg-red-500">Sale</Badge>}
-
-                      //         <Button size="icon" variant="ghost" className="hidden md:grid absolute top-2 right-2 bg-white rounded-full place-items-center">
-                      //           <Heart className="h-4 w-4" />
-                      //         </Button>
-                      //       </div>
-                      //     </Link>
-                      //     <div className="p-4 flex flex-col gap-1">
-                      //       <div className="">
-                      //         <Link href={`/product/${product.slug}`}>
-                      //           <h3 className="font-semibold text-gray-900 hover:text-gray-700 md:line-clamp-2 line-clamp-1 md:text-base text-xs">{product.title}</h3>
-                      //         </Link>
-                      //       </div>
-
-                      //       <div className="flex justify-between">
-                      //         <p className="text-sm text-gray-500">{product.brand?.name}</p>
-                      //         <div className="flex items-center">
-                      //           <Star className={`w-4 h-4 fill-yellow-400 text-yellow-400`}
-                      //           />
-                      //           <span className="text-sm text-gray-500 ml-2">{4.5}</span>
-                      //         </div>
-                      //       </div>
-
-                      //       <div className="flex md:flex-row flex-col md:items-center gap-y-2 justify-between">
-                      //         <div className="flex items-center space-x-2">
-                      //           <span className="font-bold text-gray-900">₹{product.price ?? product.product_variants[0].price}</span>
-                      //           {product.mrp && (
-                      //             <span className="text-sm text-gray-500 line-through">${product.mrp}</span>
-                      //           )}
-                      //         </div>
-                      //         <Button size="sm" onClick={() => handleAddToCart(product)}>
-                      //           <ShoppingCart className="h-4 w-4 mr-1" />
-                      //           Add
-                      //         </Button>
-                      //       </div>
-
-                      //     </div>
-                      //   </CardContent>
-                      // </Card>
                       <ProductCard
                         key={product.documentId}
                         showAddToWishlist={true}

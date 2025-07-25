@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CreditCard, } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/auth-context"
 
 // Razorpay types
 declare global {
@@ -50,20 +51,25 @@ export interface CreateOrderType {
 
 interface RazorpayCheckoutProps {
     createOrder: () => Promise<CreateOrderType | null> // Create an order using your backend logic
+    verifyOrder: (paymentRes: any) => Promise<any> // Verify the order using your backend logic
     payText?: string,
     onSuccess?: (paymentData: any) => void
     onError?: (error: any) => void
     razorpayKey?: string
+    onModalOpen?: () => void
 }
 
 export function RazorpayCheckout({
     createOrder,
+    verifyOrder,
     payText,
     onSuccess,
     onError,
+    onModalOpen,
     razorpayKey = "rzp_test_BS5XsDW435IPVf", // Replace with your actual key
 }: RazorpayCheckoutProps) {
     const [isLoading, setIsLoading] = useState(false)
+    const { user } = useAuth()
     const [isScriptLoaded, setIsScriptLoaded] = useState(false)
     const { toast } = useToast()
 
@@ -108,13 +114,9 @@ export function RazorpayCheckout({
                 description: `Payment for item desc item(s)`,
                 order_id: order.id,
                 handler: (response) => {
-
+                    console.log(response)
+                    verifyOrder(response)
                 },
-                // prefill: {
-                //     name: customerInfo.name,
-                //     email: customerInfo.email,
-                //     contact: customerInfo.contact,
-                // },
                 theme: {
                     color: "#3B82F6",
                 },
@@ -130,6 +132,14 @@ export function RazorpayCheckout({
                 },
             }
 
+            if (user) {
+                options.prefill = {
+                    name: user.name,
+                    email: user.email,
+                    contact: user.phone,
+                }
+            }
+
             // Open Razorpay checkout
             const rzp = new window.Razorpay(options)
             rzp.on("payment.failed", (response: any) => {
@@ -137,7 +147,9 @@ export function RazorpayCheckout({
                 onError?.(response.error)
             })
 
+
             rzp.open()
+            onModalOpen && onModalOpen()
         } catch (error) {
             console.error("Payment error:", error)
             toast({

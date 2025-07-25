@@ -9,12 +9,11 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAddress } from "@/hooks/use-address"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet"
 import { Switch } from "../ui/switch"
+import { useAddress } from "@/contexts/address-context"
 
 export function AddressSelection() {
-  const [showAddressSheet, setShowAddressSheet] = useState(false)
   const { addresses, selectedAddress, setSelectedAddress, addAddress } = useAddress()
 
   const handleAddAddress = (formData: FormData) => {
@@ -31,8 +30,7 @@ export function AddressSelection() {
       is_default: false,
     }
 
-    addAddress(newAddress)
-    setShowAddressSheet(false)
+    // addAddress(newAddress)
   }
 
   return (
@@ -68,11 +66,9 @@ export function AddressSelection() {
 
       <Sheet>
         <SheetTrigger>
-          {/* <Button variant="outline" className="w-full mt-4 bg-transparent"> */}
-          <div className="">
+          <div className="p-2 border rounded-md text-sm font-medium mt-2">
             Add New Address
           </div>
-          {/* </Button> */}
         </SheetTrigger>
         <SheetContent className="w-full sm:max-w-md">
           <SheetHeader>

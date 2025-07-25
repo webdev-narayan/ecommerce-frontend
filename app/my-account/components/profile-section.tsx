@@ -7,16 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
-import type { User } from "@/lib/types/type"
-import { api } from "@/lib/mock-api"
+import { useAuth } from "@/contexts/auth-context"
+import { User } from "@/lib/types/auth"
+import { mediaUrlGenerator } from "@/lib/utils"
+import { putApi } from "@/lib/api"
+import { toast } from "sonner"
 
 export function ProfileSection() {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
-  const { toast } = useToast()
+  const { user: userData, loading, refreshUser } = useAuth()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,51 +26,25 @@ export function ProfileSection() {
   })
 
   useEffect(() => {
-    loadUser()
-  }, [])
-
-  const loadUser = async () => {
-    try {
-      setLoading(true)
-      const userData = await api.getUser()
+    if (userData) {
       setUser(userData)
       setFormData({
-        name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
+        name: userData?.name || "",
+        email: userData?.email || "",
+        phone: userData?.phone || "",
       })
-    } catch (error) {
-      console.error("Failed to load user:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load profile information",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [])
 
   const handleSave = async () => {
-    try {
-      setSaving(true)
-      const updatedUser = await api.updateUser(formData)
-      setUser(updatedUser)
-      setIsEditing(false)
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-      })
-    } catch (error) {
-      console.error("Failed to update profile:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      })
-    } finally {
-      setSaving(false)
+    setSaving(true)
+    const updatedUser = await putApi<{ data: User }>(`/user/${userData?.documentId}`, formData, true)
+    if (updatedUser.data?.data) {
+      refreshUser()
     }
+    setIsEditing(false)
+    toast("Profile updated successfully")
+    setSaving(false)
   }
 
   const handleCancel = () => {
@@ -131,10 +106,10 @@ export function ProfileSection() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+          {/* <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
             <div className="relative self-center sm:self-start">
               <Avatar className="h-20 w-20 border-2 border-slate-200">
-                <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                <AvatarImage src={mediaUrlGenerator(user.profile?.url)} className="object-cover object-top" />
                 <AvatarFallback className="bg-slate-100 text-slate-700 text-lg">
                   {user.name
                     .split(" ")
@@ -161,7 +136,7 @@ export function ProfileSection() {
                 <p className="text-xs text-slate-500 mt-1">JPG, PNG up to 2MB</p>
               </div>
             )}
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">

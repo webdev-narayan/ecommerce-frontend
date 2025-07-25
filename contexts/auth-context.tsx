@@ -11,10 +11,19 @@ interface AuthContextType {
   userRole: string | null
   login: (email: string, role: string) => Promise<LoginResponse | null>
   logout: () => void
+  refreshUser: () => void
   loading: boolean
 }
 
+interface CreateUser {
+  name: string
+  email: string
+  password: string
+  phone: string
+}
+
 import { getUser, login as SLogin, logout as SLogout } from "@/lib/auth"
+import { postApi } from '@/lib/api'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -23,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userRole, setUserRole] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reload, setReload] = useState(false)
   const router = useRouter()
 
   const meApi = async () => {
@@ -31,6 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (res) {
       setIsAuthenticated(true)
       setUserRole("authenticated")
+      setUser(res)
     } else {
       setIsAuthenticated(false)
     }
@@ -38,7 +49,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
   useEffect(() => {
     meApi()
-  }, [])
+  }, [reload])
+
+  const refreshUser = async () => {
+    setReload(!reload)
+  }
 
   const login = async (email: string, password: string): Promise<LoginResponse | null> => {
     // const res = await postApi<LoginResponse>('/auth/local', { identifier: email, password: password }, false)
@@ -62,8 +77,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  const register = async (data: CreateUser) => {
+    const res = await postApi<{ data: User }>('/user/register', data, false)
+    if (res.data?.data) {
+
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userRole, user, login, logout, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, userRole, user, login, logout, refreshUser, loading }}>
       {children}
     </AuthContext.Provider>
   )

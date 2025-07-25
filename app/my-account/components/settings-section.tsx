@@ -6,63 +6,45 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
-import { api } from "@/lib/mock-api"
+import { toast } from "sonner"
+import { postApi } from "@/lib/api"
+import { redirect } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 export function SettingsSection() {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [changing, setChanging] = useState(false)
-  const { toast } = useToast()
+  const { logout } = useAuth()
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "New passwords don't match",
-        variant: "destructive",
-      })
+      toast.error("New passwords don't match")
       return
     }
 
     if (newPassword.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive",
-      })
+      toast.error("Password must be at least 6 characters long")
       return
     }
+    const res = await postApi("/auth/change-password", {
+      password: newPassword,
+      currentPassword: currentPassword,
+      passwordConfirmation: confirmPassword,
+    }, true)
 
-    try {
-      setChanging(true)
-      await api.changePassword(currentPassword, newPassword)
-      setCurrentPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
-      toast({
-        title: "Success",
-        description: "Password changed successfully",
-      })
-    } catch (error) {
-      console.error("Failed to change password:", error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to change password",
-        variant: "destructive",
-      })
-    } finally {
-      setChanging(false)
-    }
+
+    setChanging(true)
+    setCurrentPassword("")
+    setNewPassword("")
+    setConfirmPassword("")
   }
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
-    })
+  const handleLogout = async () => {
+    logout()
+    toast.success("You have been successfully logged out")
+    redirect("/")
   }
 
   return (
