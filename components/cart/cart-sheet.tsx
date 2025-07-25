@@ -42,8 +42,6 @@ export function CartSheet() {
         return `Shopping Cart (${getTotalItems()} items)`
       case "checkout":
         return "Checkout"
-      case "success":
-        return "Order Confirmed"
       default:
         return "Shopping Cart"
     }
@@ -87,13 +85,12 @@ export function CartSheet() {
                   <AddressProvider>
                     <CheckoutFlow
                       handleClose={() => setIsOpen(false)}
-                      onSuccess={(data) => handleStepChange("success", data)}
+                      onSuccess={(data) => handleStepChange("cart", data)}
                       onBack={() => handleStepChange("cart")}
                     />
                   </AddressProvider>
                 </PaymentProvider>
               )}
-              {currentStep === "success" && <CheckoutSuccess orderData={orderData} onClose={handleClose} />}
             </CouponProvider>
           )}
         </div>

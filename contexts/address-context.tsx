@@ -10,13 +10,12 @@ interface AddressContextType {
   addresses: Address[]
   selectedAddress: string
   setSelectedAddress: (id: string) => void
-  addAddress: (address: CreateAddress) => void
+  addAddress: (address: CreateAddress) => Promise<void>
   removeAddress: (id: string) => void
   updateAddress: (id: string, updatedAddress: Partial<Address>) => void
 }
 
 const AddressContext = createContext<AddressContextType | null>(null)
-
 
 interface AddressProviderProps {
   children: ReactNode
@@ -35,7 +34,7 @@ export function AddressProvider({ children }: AddressProviderProps) {
       if (defaultAddress) {
         setSelectedAddress(defaultAddress?.id?.toString())
       } else {
-        setSelectedAddress(addresses[0]?.id.toString())
+        setSelectedAddress(res.data.data[0]?.id.toString())
       }
     }
   }
@@ -44,10 +43,11 @@ export function AddressProvider({ children }: AddressProviderProps) {
     fetchAddresses()
   }, [user])
 
-  const addAddress = async (address: CreateAddress) => {
-    const res = await postApi<{ data: Address }>("/addresses", address, true)
+  const addAddress = async ({ documentId, ...rest }: CreateAddress) => {
+    const res = await postApi<{ data: Address }>("/addresses", rest, true)
     if (res.data?.data) {
       setAddresses((prev) => [...prev, res.data?.data as Address])
+      setSelectedAddress(res.data.data.id.toString())
     }
   }
 

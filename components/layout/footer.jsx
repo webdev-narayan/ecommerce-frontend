@@ -29,9 +29,9 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">{publicInfo.store_name}</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">{publicInfo?.store_name}</h3>
             <p className="text-gray-600 mb-4">
-              {publicInfo.description}
+              {publicInfo?.description}
             </p>
             <div className="flex space-x-4">
               <Facebook className="w-5 h-5 text-gray-600 hover:text-gray-900 cursor-pointer" />
@@ -111,22 +111,22 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-start">
                 <MapPin className="w-4 h-4 text-gray-600 mr-2 mt-0.5 shrink-0" />
-                <span className="text-gray-600 text-sm">{publicInfo.address || ""}</span>
+                <span className="text-gray-600 text-sm">{publicInfo?.address || ""}</span>
               </div>
               <div className="flex items-center">
                 <Phone className="w-4 h-4 text-gray-600 mr-2 shrink-0" />
-                <span className="text-gray-600 text-sm">{!publicInfo.phone.includes("+91") && "+91"} {publicInfo.phone}</span>
+                <span className="text-gray-600 text-sm">{!publicInfo?.phone.includes("+91") && "+91"} {publicInfo?.phone}</span>
               </div>
               <div className="flex items-center">
                 <Mail className="w-4 h-4 text-gray-600 mr-2 shrink-0" />
-                <span className="text-gray-600 text-sm">{publicInfo.email}</span>
+                <span className="text-gray-600 text-sm">{publicInfo?.email}</span>
               </div>
             </div>
           </div>
         </div>
 
         <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-600 text-sm text-center md:text-left">© 2024 {publicInfo.store_name || ""}. All rights reserved.</p>
+          <p className="text-gray-600 text-sm text-center md:text-left">© 2024 {publicInfo?.store_name || ""}. All rights reserved.</p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <span className="text-gray-600 text-sm">We accept:</span>
             <div className="flex space-x-2">

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { X } from "lucide-react";
 
 export default function InstallPwaPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -49,13 +50,21 @@ export default function InstallPwaPrompt() {
 
     return (
         <div className="fixed bottom-6 right-6 z-50">
-            <Card className="shadow-2xl rounded-2xl p-4 w-72">
-                <CardContent className="flex flex-col items-start gap-3">
-                    <p className="text-base font-medium">Install this app for a better experience!</p>
-                    <Button onClick={handleInstallClick} className="w-full">
-                        Install App
-                    </Button>
+            <Card className="shadow-2xl rounded-2xl w-72 relative">
+                <CardHeader>
+                    Install this app for a better experience!
+                </CardHeader>
+                <CardContent className="flex flex-col items-start ">
+                    <div className="flex items-center justify-between w-full gap-3">
+                        {/* <Button onClick={handleInstallClick} className="w-full" variant={"outline"} size={"sm"}>
+                            Close
+                        </Button> */}
+                        <Button onClick={handleInstallClick} className="w-full" size={"sm"}>
+                            Install App
+                        </Button>
+                    </div>
                 </CardContent>
+                <X onClick={() => setShowPrompt(false)} className="absolute top-5 right-5 bg-gray-200 rounded" />
             </Card>
         </div>
     );

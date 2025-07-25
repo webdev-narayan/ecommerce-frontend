@@ -85,20 +85,21 @@ export default function CategoriesPage() {
           </div>
           :
           <>
-            <div className="mt-10 container mx-auto py-6">
-              <ImageCarousel
-                images={banners.map(item => item.image.url)}
-                width={1000}
-                height={1000}
-                className="md:aspect-[4/1] aspect-[3/1] rounded-xl overflow-hidden"
-              />
-            </div>
-
+            {banners.length > 0 &&
+              <div className="mt-10 container mx-auto py-6">
+                <ImageCarousel
+                  images={banners.map(item => item.image.url)}
+                  width={1000}
+                  height={1000}
+                  className="md:aspect-[4/1] aspect-[3/1] rounded-xl overflow-hidden"
+                />
+              </div>
+            }
             {/* Hero Section */}
-            <section className="bg-white py-16">
+            <section className="bg-white lg:py-16 py-6">
               <div className="container mx-auto px-4 text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">Shop by Category</h1>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                <h1 className="lg:text-4xl text-3xl font-bold text-gray-900 mb-4">Shop by Category</h1>
+                <p className="lg:text-xl text-lg text-gray-600 max-w-3xl mx-auto">
                   Explore our diverse range of categories to find exactly what you're looking for. From fashion essentials to
                   lifestyle accessories, we have everything you need.
                 </p>
@@ -108,7 +109,7 @@ export default function CategoriesPage() {
             {/* Categories Grid */}
             <section className="py-16">
               <div className="container mx-auto px-4">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-8 gap-x-3 gap-y-4">
                   {categories.map((category, index) => (
                     <Card key={index} className="group cursor-pointer hover:shadow-lg transition-shadow">
                       <CardContent className="p-0">
@@ -118,15 +119,15 @@ export default function CategoriesPage() {
                             alt={category.name}
                             width={350}
                             height={250}
-                            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="md:w-full md:h-64 aspect-square object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <div className="p-6">
+                        <div className="lg:p-6 p-2">
                           <h3 className="text-xl font-semibold text-gray-900 mb-2">{category.name}</h3>
-                          <p className="text-gray-600 mb-4 text-sm leading-relaxed">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eveniet, similique?</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-500">{10}</span>
-                            <Button variant="outline" onClick={() => redirect(`/shop?category=${category.id}`)} size="sm">
+                          <p className="text-gray-600 mb-4 text-sm hidden md:block leading-relaxed">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eveniet, similique?</p>
+                          <div className="flex items-center justify-end w-full">
+                            {/* <span className="text-sm text-gray-500">{10}</span> */}
+                            <Button variant="outline" className="w-full md:w-fit" onClick={() => redirect(`/shop?category=${category.id}`)} size="sm">
                               Shop Now
                               <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>

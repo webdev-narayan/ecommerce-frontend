@@ -212,15 +212,17 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
-      <div className="mt-10 container mx-auto py-6">
-        <ImageCarousel
-          images={banners.map(item => item.image.url)}
-          width={1000}
-          height={1000}
-          className="md:aspect-[4/1] aspect-[3/1] rounded-xl overflow-hidden"
-        />
-      </div>
+      {
+        banners.length > 0 &&
+        <div className="mt-10 container mx-auto py-6">
+          <ImageCarousel
+            images={banners.map(item => item.image.url)}
+            width={1000}
+            height={1000}
+            className="md:aspect-[4/1] aspect-[3/1] rounded-xl overflow-hidden"
+          />
+        </div>
+      }
 
       {/* Main Content */}
       <div className="container mx-auto px-4 md:px-0 py-8">

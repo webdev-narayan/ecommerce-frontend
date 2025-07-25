@@ -84,17 +84,20 @@ export default function CollectionsPage() {
         </div>
           :
           <>
-            <div className="mt-10 container mx-auto py-6">
-              <ImageCarousel
-                images={banners.map(item => item.image.url)}
-                width={1000}
-                height={1000}
-                className="md:aspect-[4/1] aspect-[3/1] rounded-md overflow-hidden"
-              />
-            </div>
+            {
+              banners.length > 0 &&
+              <div className="mt-10 container mx-auto py-6">
+                <ImageCarousel
+                  images={banners.map(item => item.image.url)}
+                  width={1000}
+                  height={1000}
+                  className="md:aspect-[4/1] aspect-[3/1] rounded-md overflow-hidden"
+                />
+              </div>
+            }
 
             {/* Hero Section */}
-            <section className="bg-white py-16">
+            <section className="bg-white md:py-16 py-6">
               <div className="container mx-auto px-4 text-center">
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">Top Collections</h1>
                 <p className="text-xl text-gray-600 max-w-3xl mx-auto">

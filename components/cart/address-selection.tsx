@@ -15,10 +15,10 @@ import { useAddress } from "@/contexts/address-context"
 
 export function AddressSelection() {
   const { addresses, selectedAddress, setSelectedAddress, addAddress } = useAddress()
-
-  const handleAddAddress = (formData: FormData) => {
+  const [showForm, setShowForm] = useState(false)
+  const handleAddAddress = async (formData: FormData) => {
     const newAddress = {
-      id: 1,
+      documentId: "",
       name: formData.get("name") as string,
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
@@ -29,8 +29,8 @@ export function AddressSelection() {
       pincode: formData.get("pincode") as string,
       is_default: false,
     }
-
-    // addAddress(newAddress)
+    await addAddress(newAddress)
+    setShowForm(false)
   }
 
   return (
@@ -64,7 +64,7 @@ export function AddressSelection() {
         ))}
       </RadioGroup>
 
-      <Sheet>
+      <Sheet open={showForm} onOpenChange={setShowForm}>
         <SheetTrigger>
           <div className="p-2 border rounded-md text-sm font-medium mt-2">
             Add New Address

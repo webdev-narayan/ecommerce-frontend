@@ -83,14 +83,16 @@ const BrandsPage = () => {
         </div>
           :
           <>
-            <div className="mt-10 container mx-auto py-6">
-              <ImageCarousel
-                images={banners.map(item => item.image.url)}
-                width={1000}
-                height={1000}
-                className="md:aspect-[4/1] aspect-[3/1] rounded-xl overflow-hidden"
-              />
-            </div>
+            {banners.length > 0 &&
+              <div className="mt-10 container mx-auto py-6">
+                <ImageCarousel
+                  images={banners.map(item => item.image.url)}
+                  width={1000}
+                  height={1000}
+                  className="md:aspect-[4/1] aspect-[3/1] rounded-xl overflow-hidden"
+                />
+              </div>
+            }
 
             {/* Hero Section */}
             <section className="bg-white py-16">
@@ -106,10 +108,10 @@ const BrandsPage = () => {
             {/* Brands Grid */}
             <section className="py-16">
               <div className="container mx-auto px-4">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-8 gap-3 gap-y-4">
                   {brands.map((brand, index) => (
                     <Card key={index} className="group cursor-pointer hover:shadow-lg transition-shadow">
-                      <CardContent className="p-6">
+                      <CardContent className="md:p-6 p-2">
                         <div className="text-center mb-6">
                           <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-gray-200 transition-colors">
                             <Image
@@ -121,17 +123,21 @@ const BrandsPage = () => {
                             />
                           </div>
                           <h3 className="text-xl font-semibold text-gray-900 mb-2">{brand.name}</h3>
-                          {/* <Badge variant="secondary" className="mb-3">
-                      {brand.category}
-                    </Badge> */}
                         </div>
+
 
                         <Button
                           className="w-full"
                           variant="outline"
                           onClick={() => redirect(`/shop?brand=${brand.id}`)}
                         >
-                          Shop {brand.name}
+                          <span className="md:hidden">
+                            Shop Now
+                          </span>
+                          <span className="md:block hidden">
+                            Shop {brand.name}
+                          </span>
+
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </CardContent>
