@@ -12,7 +12,7 @@ export interface Reel {
 
 export interface CreateReel {
     title: string;
-    video: number | null
+    video?: number | null
     products: number[]
     is_active: boolean
 }

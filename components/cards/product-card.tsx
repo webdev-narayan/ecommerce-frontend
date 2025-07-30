@@ -51,7 +51,7 @@ const ProductCard = ({ product, showAddToCart,
                             alt={product.title}
                             width={300}
                             height={250}
-                            className={`w-full h-full object-cover ${product.reel?.video.url ? "group-hover:hidden" : "group-hover:scale-110"} transition-all duration-300`}
+                            className={`w-full h-full object-cover ${product.reel?.video?.url ? "group-hover:hidden" : "group-hover:scale-110"} transition-all duration-300`}
                         />
                     </Link>
                     {product.stock && <Badge className="absolute top-2 left-2 bg-red-500 ">Sale</Badge>}

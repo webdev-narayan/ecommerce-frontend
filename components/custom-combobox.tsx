@@ -14,11 +14,6 @@ interface Option {
     label: string;
 }
 
-interface ComboboxProps {
-    options: Option[];
-    value: string;
-}
-
 interface CustomComboboxProps {
     onSearch?: (query: string) => Promise<Option[]>;
     options?: Option[];
@@ -192,11 +187,13 @@ export function CustomCombobox({
                 </PopoverContent>
             </Popover>
 
-            {onAddClick && (
-                <Button variant="outline" size="icon" onClick={onAddClick} type="button">
-                    <Plus className="h-4 w-4" />
-                </Button>
-            )}
-        </div>
+            {
+                onAddClick && (
+                    <Button variant="outline" size="icon" onClick={onAddClick} type="button">
+                        <Plus className="h-4 w-4" />
+                    </Button>
+                )
+            }
+        </div >
     )
 }

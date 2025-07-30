@@ -4,11 +4,11 @@ import { getHeaders } from "@/lib/auth";
 import { Media } from "./types/type";
 // import { setupCache } from 'axios-cache-interceptor';
 // local api
-export const mediaBaseUrl = "http://localhost:1337"
-export const baseURL = "http://localhost:1337/api";
+// export const mediaBaseUrl = "http://localhost:1337"
+// export const baseURL = "http://localhost:1337/api";
 // server api
-// export const mediaBaseUrl = "https://ecapi.rigyasa.com";
-// export const baseURL = "https://ecapi.rigyasa.com/api";
+export const mediaBaseUrl = "https://ecapi.rigyasa.com";
+export const baseURL = "https://ecapi.rigyasa.com/api";
 // Create axios instance
 const api = axios.create({
     baseURL: baseURL,
@@ -98,8 +98,6 @@ export async function deleteApi<T>(
 // UPLOAD
 
 export async function uploadToStrapi(files: File | File[]): Promise<Media[] | undefined> {
-    // console.log(files)
-    // console.log("inside upload to strapi")
     const formData = new FormData();
 
     if (Array.isArray(files)) {

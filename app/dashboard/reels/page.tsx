@@ -38,6 +38,7 @@ import { Switch } from "@/components/ui/switch"
 import FileUpload from "@/components/ui/file-upload"
 import { CustomCombobox } from "@/components/custom-combobox"
 import { Product } from "../products/product.type"
+import { Badge } from "@/components/ui/badge"
 
 export default function ReelsPage() {
   const [reels, setBanners] = useState<Reel[]>([])
@@ -53,13 +54,15 @@ export default function ReelsPage() {
   const [meta, setMeta] = useState<MetaResponse>()
   const [isMobile, setIsMobile] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
-
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
+  const [fileChanged, setFileChanged] = useState<boolean>(false)
   async function getReels() {
     const query = new URLSearchParams();
 
     query.append("pagination[page]", page.toString());
     query.append("pagination[pageSize]", pageSize.toString());
     query.append("populate", "video")
+    query.append("populate", "products")
     if (debouncedSearchedQuery.trim()) {
       query.append("search", debouncedSearchedQuery);
     }
@@ -76,17 +79,21 @@ export default function ReelsPage() {
     query.append("pagination[page]", "1")
     query.append("pagination[pageSize]", "50")
 
-    if (search.trim()) {
+    if (search.trim().length > 3) {
       query.append("filters[title][$containsi]", search)
     }
     const res = await getApi<{ data: Product[] }>(`/products?${query.toString()}`)
-    setProducts(res.data?.data ?? [])
     return res.data?.data?.map((item) => ({ value: item.id.toString(), label: item.title })) ?? []
   }
 
-  //   const getBrands = async (search) => {
-  //   const response = await apiRepository.brands.getAll(query)
-  // }
+  const initialProudcts = async (search: string) => {
+    const query = new URLSearchParams();
+    query.append("pagination[page]", "1")
+    query.append("pagination[pageSize]", "50")
+
+    const res = await getApi<{ data: Product[] }>(`/products?${query.toString()}`)
+    setProducts(res.data?.data ?? [])
+  }
 
   const handleDeleteBanner = (reel: Reel) => {
     setReelToAction(reel)
@@ -95,6 +102,7 @@ export default function ReelsPage() {
   const handleEditBanner = (reel: Reel) => {
     setIsEditing(true)
     setReelToAction(reel)
+    setSelectedProducts(reel.products ?? [])
     setIsBannerFormOpen(true)
   }
 
@@ -115,51 +123,56 @@ export default function ReelsPage() {
     const is_active = formData.get("is_active") as string;
 
     const files = formData.getAll("video") as File[]
-    let video: number | null = null;
-    if (files.length > 0) {
-      const res = await uploadToStrapi(files)
-      if (res) {
-        video = res[0].id
-      }
-    }
+
 
     const payload: CreateReel = {
       title: title,
-      video: video,
-      products: [1],
+      products: selectedProducts.map(item => item.id),
       is_active: is_active == "on" ? true : false
     }
+
+    if (files.length > 0 && !isEditing) {
+      const res = await uploadToStrapi(files)
+      if (res) {
+        payload.video = res[0].id
+      }
+    } else if (fileChanged && files.length > 0) {
+      const res = await uploadToStrapi(files)
+      if (res) {
+        payload.video = res[0].id
+      }
+    }
+
 
     if (isEditing && reelToAction) {
       const res = await putApi<{ data: Reel }>(`/reels/${reelToAction.documentId}`, {
         data: payload
       }, true)
       if (res.success && res.data) {
-        toast.success("Reel added successfully")
-        setBanners(reels.map((reel) => {
-          // @ts-ignore
-          if (reel.id === res?.data.data.id) {
-            return res.data.data
-          }
-          return reel
-        }))
+        toast.success("Reel saved successfully")
+        getReels()
         setIsBannerFormOpen(false)
+        setFileChanged(false)
+        setSelectedProducts([])
+        setIsEditing(false)
       }
 
     } else {
+
       const res = await postApi<{ data: Reel }>("/reels", {
         data: payload
       }, true)
       if (res.success && res.data) {
         toast.success("Reel added successfully")
-        setBanners([...reels, res.data.data])
+        getReels()
         setIsBannerFormOpen(false)
+        setSelectedProducts([])
       }
     }
   }
 
   useEffect(() => {
-    getProudcts("")
+    initialProudcts("")
   }, [])
 
   useEffect(() => {
@@ -193,38 +206,13 @@ export default function ReelsPage() {
     return () => window.removeEventListener("resize", checkScreenSize)
   }, [])
 
-  // const productOptions = products.map(item => item)
+  const handleProductselect = (id: string) => {
+    const product = products.find(item => item.id === +id)
+    if (product && !selectedProducts.map(item => item.id).includes(+id)) {
+      setSelectedProducts(prev => [...prev, product])
+    }
+  }
 
-  const productOptions = [...products
-    .map((pro) => {
-      const id = pro.documentId || pro.id
-      return {
-        value: id ? id.toString() : "",
-        label: pro.title || "Unknown Product",
-      }
-    })
-    .filter((option) => option.value),
-  ...products
-    .map((pro) => {
-      const id = pro.documentId || pro.id
-      return {
-        value: id ? id.toString() : "",
-        label: pro.title || "Unknown Product",
-      }
-    })
-    .filter((option) => option.value),
-  ...products
-    .map((pro) => {
-      const id = pro.documentId || pro.id
-      return {
-        value: id ? id.toString() : "",
-        label: pro.title || "Unknown Product",
-      }
-    })
-    .filter((option) => option.value)
-
-
-  ]
   return (
     <>
       <div className="container mx-auto p-6">
@@ -241,7 +229,7 @@ export default function ReelsPage() {
           </Button>
           <Sheet open={isBannerFormOpen} onOpenChange={setIsBannerFormOpen}>
             <SheetContent side={isMobile ? "bottom" : "right"}
-              className={isMobile ? "h-[85vh]" : "w-[400px] sm:w-[540px]"}>
+              className={isMobile ? "h-[85vh]" : "w-[400px] sm:w-[540px] z-50"}>
               <SheetHeader>
                 <SheetTitle>Create New Reel</SheetTitle>
                 <SheetDescription>
@@ -249,48 +237,39 @@ export default function ReelsPage() {
                 </SheetDescription>
               </SheetHeader>
 
-              <form action={handleSaveBanner} className="space-y-6 py-6">
-                <div className="flex flex-col gap-2">
-                  <CustomCombobox
-                    onSearch={getProudcts}
-                    value={""}
-                    onValueChange={() => { }}
-                    emptyText="No Products Found"
-                    debounceMs={400}
-                    enableServerSearch={true}
-                    placeholder="Search"
-                    options={productOptions}
-                    addButtonText={""}
-                    searchPlaceholder={"search"}
-                    minSearchLength={4}
-                  />
+              <form action={handleSaveBanner} className="space-y-6 py-6 z-auto">
 
-                  {/* <CustomCombobox
-                    options={brandOptions}
-                    value={formData.brand}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, brand: value }))}
-                    onAddClick={() => setBrandFormOpen(true)}
-                    placeholder="Select brand..."
-                    searchPlaceholder="Search brands..."
-                    emptyText="No brand found."
-                    addButtonText="Add brand"
-
-                    debounceMs={500}
-                    minSearchLength={3}
-                    enableServerSearch={true}
-                    onSearch={getBrands}
-                  /> */}
-
-
-                </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 z-20">
                   <Label htmlFor="title">Title</Label>
                   <Input
                     id="title"
                     name="title"
-                    {...(isEditing && reelToAction && { value: reelToAction.title })}
+                    {...(isEditing && reelToAction && { defaultValue: reelToAction.title })}
                     placeholder="Enter reel title"
                     required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div>
+                    {selectedProducts.map(item => (
+                      <Badge key={item.documentId} variant={"outline"}>{item.title} <X onClick={() => setSelectedProducts(prev => prev.filter(it => it.id !== item.id))} className="size-5 ml-2 text-red-500" /> </Badge>
+                    ))}
+                  </div>
+
+                  <CustomCombobox
+                    onSearch={getProudcts}
+                    value={"1"}
+                    onValueChange={handleProductselect}
+                    emptyText="No Products Found"
+                    debounceMs={400}
+                    enableServerSearch={true}
+                    placeholder="Select Products"
+                    options={products.map(item => ({ value: item.id.toString(), label: item.title }))}
+                    addButtonText={""}
+                    searchPlaceholder={"search"}
+                    minSearchLength={4}
+                    className="scale-z-90"
                   />
                 </div>
 
@@ -310,7 +289,7 @@ export default function ReelsPage() {
                     key={"video"}
                     maxFileSize={3}
                     name={"video"}
-                  // onFilesChange={(file:File[])=>}
+                    onFilesChange={() => setFileChanged(true)}
                   />
                 </div>
 
@@ -320,7 +299,7 @@ export default function ReelsPage() {
                     Cancel
                   </Button>
                   <Button type="submit" className="w-full sm:w-auto">
-                    Create Reel
+                    {isEditing ? "Save" : "Create Reel"}
                   </Button>
                 </SheetFooter>
               </form>
@@ -358,7 +337,7 @@ export default function ReelsPage() {
               className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white aspect-[9/16]"
             >
               <div className="relative aspect-square overflow-hidden bg-gray-100 h-full w-full">
-                <video src={mediaUrlGenerator(reel.video.url)}
+                <video src={mediaUrlGenerator(reel.video?.url)}
                   controls
                   autoPlay
                   muted
@@ -402,7 +381,7 @@ export default function ReelsPage() {
                               <DialogTitle>Products</DialogTitle>
                               <div className="grid grid-cols-2 gap-3">
                                 {reel.products?.map(product => (
-                                  <Card className="flex items-start gap-4">
+                                  <Card key={product.id} className="flex items-start gap-4">
                                     <div>
                                       <img
                                         src={mediaUrlGenerator(product.thumbnail?.url)}

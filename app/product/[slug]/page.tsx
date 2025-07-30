@@ -69,19 +69,24 @@ export default function ProductPage() {
     if (response.data) {
       setProduct(response.data)
       setSelectedProductVariant(response.data.product_variants[0])
-      const allGallery: Media[] = []
+      const gallery: Media[] = []
       response.data.gallery?.forEach((item) => {
-        allGallery.push(item)
+        gallery.push(item)
       })
       response.data.product_variants.forEach((variant) => {
         variant.gallery?.forEach((item) => {
-          allGallery.push(item)
+          gallery.push(item)
         })
       })
       if (response.data.reel) {
-        allGallery.unshift(response.data.reel.video)
+        gallery.unshift(response.data.reel.video)
       }
-      setGallery(allGallery)
+
+      if (gallery.length === 0 && response.data.thumbnail) {
+        gallery.push(response.data.thumbnail)
+      }
+
+      setGallery(gallery)
     }
     setIsLoading(false)
   }
@@ -95,17 +100,6 @@ export default function ProductPage() {
     setQuantity(newQuantity)
   }
 
-  const nextImage = () => {
-    if (gallery?.length) {
-      setSelectedImageIndex((prev) => (prev + 1) % gallery.length)
-    }
-  }
-
-  const prevImage = () => {
-    if (gallery) {
-      setSelectedImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length)
-    }
-  }
 
   const handleAddToCart = () => {
     if (product) {
