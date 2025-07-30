@@ -1,5 +1,5 @@
 import { Product } from '@/app/dashboard/products/product.type'
-import ProductCard from '@/components/product-card'
+import ProductCard from '@/components/cards/product-card'
 import { Button } from '@/components/ui/button'
 import { getApi } from '@/lib/api'
 import { ArrowRight, } from 'lucide-react'
@@ -18,6 +18,8 @@ const FeatureProductSection = () => {
             query.append("populate[1]", "thumbnail")
             query.append("populate[2]", "brand")
             query.append("populate[3]", "product_variants")
+            query.append("populate[4]", "reel")
+            query.append("populate[5]", "reel.video")
             const res = await getApi<{ data: Product[] }>(`/products?${query.toString()}`)
             if (res.data) {
                 setProducts(res.data.data)

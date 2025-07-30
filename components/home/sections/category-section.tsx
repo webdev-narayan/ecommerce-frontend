@@ -1,5 +1,6 @@
 import { Banner } from '@/app/dashboard/banners/banner.type'
 import { Category } from '@/app/dashboard/categories/categories.type'
+import CategoryCard from '@/components/cards/category-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -54,7 +55,7 @@ const CategorySection = () => {
                         Explore our wide range of categories to find exactly what you're looking for.
                     </p>
                 </div>
-                <div className=" grid grid-cols-3 gap-3 md:flex md:gap-10 flex-wrap justify-center items-center">
+                {/* <div className=" grid grid-cols-3 gap-3 md:flex md:gap-10 flex-wrap justify-center items-center">
                     {
                         loading ? [...Array(4)].map((item, index) => {
                             return <SkeletonComp key={index} />
@@ -68,16 +69,24 @@ const CategorySection = () => {
                                                 alt={category.name}
                                                 width={500}
                                                 height={500}
-                                                // className="object-cover group-hover:scale-105 transition-transform duration-300 group-hover:object-top-left absolute top-0 left-0"
-                                                className="transition-transform duration-300 group-hover:scale-110"
+                                                className="transition-transform duration-300 group-hover:scale-110 object-cover w-full h-full"
                                             />
                                         </div>
                                         <div className="p-4 text-center">
                                             <h3 className="font-semibold text-gray-900 mb-1 md:text-base text-sm ">{category.name}</h3>
-                                            {/* <p className="text-gray-500 text-sm">{category?.count || 0}</p> */}
                                         </div>
                                     </CardContent>
                                 </Card>
+                            ))}
+                </div> */}
+                <div className="grid grid-cols-5 gap-3">
+                    {
+                        loading ? [...Array(4)].map((item, index) => {
+                            return <SkeletonComp key={index} />
+                        }) :
+                            categories.map((category, index) => (
+
+                                <CategoryCard category={category} key={index} />
                             ))}
                 </div>
                 <div className="text-center mt-12">

@@ -1,7 +1,7 @@
 // context/auth-context.tsx
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { LoginResponse, User } from '@/lib/types/auth'
 
@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   user: User | null;
   userRole: string | null
+  setUser: Dispatch<SetStateAction<User | null>>
   login: (email: string, role: string) => Promise<LoginResponse | null>
   logout: () => void
   refreshUser: () => void
@@ -85,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userRole, user, login, logout, refreshUser, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, userRole, user, setUser, login, logout, refreshUser, loading }}>
       {children}
     </AuthContext.Provider>
   )

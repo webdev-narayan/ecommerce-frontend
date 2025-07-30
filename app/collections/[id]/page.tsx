@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getApi } from "@/lib/api";
-import ProductCard from "@/components/product-card";
+import ProductCard from "@/components/cards/product-card";
 import { LoadingShoppingCart } from "@/components/loaders";
 import { Product } from "@/app/dashboard/products/product.type";
 

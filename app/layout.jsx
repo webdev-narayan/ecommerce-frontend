@@ -7,6 +7,7 @@ import { Footer } from './../components/layout/footer';
 import { AuthProvider } from "@/contexts/auth-context";
 import InstallPwaPrompt from "@/components/install-pwa";
 import { GlobalProvider } from "@/contexts/global-context";
+import NProgressProvider from "@/components/nprogress";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <InstallPwaPrompt />
+        {/* <NProgressProvider /> */}
         <AuthProvider>
           <GlobalProvider>
             <CartProvider>

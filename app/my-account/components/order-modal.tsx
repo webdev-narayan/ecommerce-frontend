@@ -138,17 +138,17 @@ export default function OrderViewModal({ orderData }: OrderViewModalProps) {
                             <CardContent className="space-y-3">
                                 <div>
                                     <p className="font-medium">{orderData.shipping_address?.name}</p>
-                                    <p className="text-sm text-muted-foreground">{orderData.shipping_address.line1}</p>
-                                    <p className="text-sm text-muted-foreground">{orderData.shipping_address.country}</p>
+                                    <p className="text-sm text-muted-foreground">{orderData.shipping_address?.line1}</p>
+                                    <p className="text-sm text-muted-foreground">{orderData.shipping_address?.country}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 text-sm">
                                         <Phone className="h-3 w-3 text-muted-foreground" />
-                                        <span>{orderData.shipping_address.phone}</span>
+                                        <span>{orderData.shipping_address?.phone}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm">
                                         <Mail className="h-3 w-3 text-muted-foreground" />
-                                        <span>{orderData.shipping_address.email}</span>
+                                        <span>{orderData.shipping_address?.email}</span>
                                     </div>
                                 </div>
                             </CardContent>

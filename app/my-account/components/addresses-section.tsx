@@ -183,16 +183,16 @@ export function AddressesSection() {
               <CardContent className="pt-0">
                 <div className="space-y-2 text-sm text-slate-600">
                   <p>
-                    {address.line1}
-                    {address.line2 && `, ${address.line2}`}
+                    {address?.line1}
+                    {address?.line2 && `, ${address?.line2}`}
                   </p>
                   <p>
-                    {address.city}, {address.state} - {address.pincode}
+                    {address?.city}, {address?.state} - {address?.pincode}
                   </p>
-                  <p>{address.country}</p>
+                  <p>{address?.country}</p>
                   <div className="flex flex-col gap-2 pt-2 text-slate-500 sm:flex-row sm:items-center sm:gap-4">
-                    <span className="truncate">{address.phone}</span>
-                    <span className="truncate">{address.email}</span>
+                    <span className="truncate">{address?.phone}</span>
+                    <span className="truncate">{address?.email}</span>
                   </div>
                 </div>
               </CardContent>

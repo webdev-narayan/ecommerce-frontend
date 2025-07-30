@@ -4,6 +4,7 @@ export interface Media {
     documentId: string;
     name: string;
     alternativeText: string;
+    mime: string,
     caption: string;
     width: number;
     height: number;

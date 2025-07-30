@@ -25,12 +25,16 @@ import { useCart } from "@/lib/cart-context"
 import { toast } from "sonner"
 import type { Product, ProductVariant } from "../../dashboard/products/product.type"
 import { getApi } from "@/lib/api"
-import { mediaUrlGenerator } from "@/lib/utils"
+import { mediaUrlGenerator, offPercentCalculator } from "@/lib/utils"
 import VariantSelector from "../variant-selector"
 import type { Media } from "@/lib/types/type"
 import moment from "moment"
 import MarkdownIt from "markdown-it";
 import NotFound from "./not-found"
+import { Badge } from "@/components/ui/badge"
+import { productStore } from "@/lib/store"
+import React from "react"
+import ProductGallery from "./product-gallery"
 
 const md = new MarkdownIt({
   html: true,
@@ -47,6 +51,11 @@ export default function ProductPage() {
   const [selectedProductVariant, setSelectedProductVariant] = useState<ProductVariant | null>(null)
   const [gallery, setGallery] = useState<Media[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  const getPrice = product && (product.price || product.product_variants[0].price) || 0;
+  const getMrp = product && (product.mrp || product.product_variants[0].mrp) || getPrice;
+
+  const [liked, setLiked] = useState<number[]>(productStore.getLikedProducts() || [])
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -69,6 +78,9 @@ export default function ProductPage() {
           allGallery.push(item)
         })
       })
+      if (response.data.reel) {
+        allGallery.unshift(response.data.reel.video)
+      }
       setGallery(allGallery)
     }
     setIsLoading(false)
@@ -112,91 +124,30 @@ export default function ProductPage() {
     }
   }
 
+
+  const handleLike = (productId: number) => {
+    if (!liked.includes(productId)) {
+      setLiked([...liked, productId])
+      productStore.addToLikes(productId)
+    } else {
+      setLiked(liked.filter((id) => id !== productId))
+      productStore.removeFromLikes(productId)
+    }
+  }
+
+
   return (
     <div className="min-h-screen bg-white">
       {!isLoading && !product ? <NotFound /> : product && (
         <div className="container mx-auto py-4 md:py-8 px-2 md:px-4">
-          <div className="flex flex-col lg:flex-row gap-4 md:gap-8 lg:gap-12">
-            {/* Product Images - Sticky on desktop */}
-            <div className="w-full lg:w-1/2 lg:sticky lg:top-4 lg:self-start">
-              <div className="flex flex-col-reverse md:flex-row gap-2 md:gap-4">
-                {/* Thumbnail Images */}
-                <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible">
-                  <div className="flex md:flex-col gap-2 md:max-w-[100px] lg:max-w-[120px]">
-                    {gallery?.map((image, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImageIndex(index)}
-                        className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gray-100 rounded-lg overflow-hidden border-2 transition-colors ${selectedImageIndex === index ? "border-gray-900" : "border-transparent hover:border-gray-300"
-                          }`}
-                      >
-                        <Image
-                          src={mediaUrlGenerator(image.url) || "/placeholder.svg"}
-                          alt={`${product.title} view ${index + 1}`}
-                          width={96}
-                          height={96}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          <div className="flex flex-col lg:flex-row gap-4 md:gap-8 lg:gap-12 lg:h-[750px]">
 
-                {/* Main Image */}
-                <div className="flex-1">
-                  <div className="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <Image
-                      src={mediaUrlGenerator(gallery?.[selectedImageIndex]?.url) || "/placeholder.svg"}
-                      alt={product.title}
-                      width={600}
-                      height={600}
-                      className="w-full h-full object-cover"
-                      priority
-                    />
+            {<ProductGallery productTitle={product.title} gallery={gallery} />}
 
-                    {/* Image Navigation */}
-                    {gallery?.length > 1 && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
-                          onClick={prevImage}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
-                          onClick={nextImage}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Image indicator dots */}
-                    {gallery?.length > 1 && (
-                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                        {gallery.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setSelectedImageIndex(index)}
-                            className={`w-2 h-2 rounded-full transition-colors ${selectedImageIndex === index ? "bg-white" : "bg-white/50"
-                              }`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Product Details - Scrollable */}
             <div className="w-full lg:w-1/2">
-              <div className="lg:max-h-screen lg:overflow-y-auto lg:pr-4 space-y-6">
+              <div className="h-full lg:overflow-y-auto lg:pr-4 space-y-6 hide-scrollbar">
                 {/* Product Info */}
                 <div className="space-y-4">
                   <div>
@@ -204,6 +155,9 @@ export default function ProductPage() {
                     <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                       {product.title}
                     </h1>
+                    <div className="prose prose-sm max-w-none">
+                      <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-4">
@@ -214,28 +168,38 @@ export default function ProductPage() {
                     <span className="text-gray-600 text-sm">({14} reviews)</span>
                   </div>
 
-                  {/* Price */}
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl md:text-3xl font-bold text-gray-900">
-                      ₹{product.price || product.product_variants[0].price}
-                    </span>
-                    {product?.mrp > product.price && (
-                      <span className="text-lg md:text-xl text-gray-500 line-through">₹{product.mrp}</span>
-                    )}
+                  <div className="space-y-2">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-3xl font-bold text-gray-900">₹ {getPrice.toLocaleString("en-IN")}</span>
+                      {
+                        getPrice < getMrp &&
+                        <>
+                          <span className="text-lg text-gray-500 line-through">₹ {getMrp.toLocaleString("en-IN")}</span>
+                          <Badge variant="destructive" className="text-sm text-white font-light">
+                            {offPercentCalculator(getPrice, getMrp).toFixed()} % OFF
+                          </Badge>
+                        </>
+                      }
+                    </div>
+                    {getPrice < getMrp
+                      &&
+                      <p className="text-sm text-green-600 font-medium">You save ₹ {getMrp - getPrice}</p>
+                    }
+                    <p className="text-xs text-gray-500">Inclusive of all taxes</p>
                   </div>
 
-                  <div className="prose prose-sm max-w-none">
-                    <p className="text-gray-600 leading-relaxed">{product.description}</p>
-                  </div>
                 </div>
 
                 {/* Variant Selector */}
                 <div>
-                  <VariantSelector
-                    product_variants={product.product_variants}
-                    onSelect={handleVariantSelect}
-                    onNoCombination={() => console.log("No combination found")}
-                  />
+                  {
+                    product.product_variants.length > 1 &&
+                    <VariantSelector
+                      product_variants={product.product_variants}
+                      onSelect={handleVariantSelect}
+                      onNoCombination={() => console.log("No combination found")}
+                    />
+                  }
                 </div>
 
                 {/* Quantity */}
@@ -276,10 +240,12 @@ export default function ProductPage() {
                   <div className="flex gap-3">
                     <Button size="lg" className="flex-1" onClick={handleAddToCart}>
                       <ShoppingCart className="h-5 w-5 mr-2" />
-                      Add to Cart
+                      <span className="sm:block hidden">
+                        Add to Cart
+                      </span>
                     </Button>
-                    <Button variant="outline" size="lg" className="shrink-0 bg-transparent">
-                      <Heart className="h-5 w-5" />
+                    <Button onClick={() => handleLike(product.id)} variant="outline" size="lg" className="shrink-0 bg-transparent">
+                      <Heart className={`h-5 w-5 ${productStore.isProductAddedToLikes(product.id) && "fill-red-500 text-red-500"}`} />
                     </Button>
                     <Button variant="outline" size="lg" className="shrink-0 bg-transparent">
                       <Share2 className="h-5 w-5" />
@@ -347,27 +313,24 @@ export default function ProductPage() {
                           {product?.reviews ? (
                             product.reviews
                               .map((review, index) => (
-                                <>
-                                  <div key={index} className="flex items-start space-x-4">
-                                    {/* <Avatar size="small" src={mediaUrlGenerator(review.user.avatar)} /> */}
-                                    <div className="">
-                                      <img
-                                        className="aspect-square max-w-12 border rounded-full object-cover object-top"
-                                        src={mediaUrlGenerator(review.user?.profile?.url)} alt="" />
-                                    </div>
-                                    <div>
-                                      <p className="text-sm md:text-base font-medium text-gray-900 flex justify-between items-center">
-                                        {review?.user?.name}
-                                        <span className="text-xs text-gray-400 font-light">
-                                          {moment(review.createdAt).fromNow(true)} ago
-                                        </span>
-                                      </p>
-                                      <p className="text-sm md:text-base text-gray-600 flex items-center gap-2"> <Star className="size-4 fill-yellow-400 text-yellow-400" />{review.rating} out of 5</p>
-                                      <p className="text-sm md:text-base">{review.comment}</p>
-                                    </div>
+                                <div key={review.documentId} className="flex items-start space-x-4">
+                                  {/* <Avatar size="small" src={mediaUrlGenerator(review.user.avatar)} /> */}
+                                  <div className="">
+                                    <img
+                                      className="aspect-square max-w-12 border rounded-full object-cover object-top"
+                                      src={mediaUrlGenerator(review.user?.profile?.url)} alt="" />
                                   </div>
-                                  {/* <Separator className="my-2" /> */}
-                                </>
+                                  <div>
+                                    <p className="text-sm md:text-base font-medium text-gray-900 flex justify-between items-center">
+                                      {review?.user?.name}
+                                      <span className="text-xs text-gray-400 font-light">
+                                        {moment(review.createdAt).fromNow(true)} ago
+                                      </span>
+                                    </p>
+                                    <p className="text-sm md:text-base text-gray-600 flex items-center gap-2"> <Star className="size-4 fill-yellow-400 text-yellow-400" />{review.rating} out of 5</p>
+                                    <p className="text-sm md:text-base">{review.comment}</p>
+                                  </div>
+                                </div>
                               ))
                           )
                             :
@@ -415,3 +378,5 @@ export default function ProductPage() {
     </div >
   )
 }
+
+

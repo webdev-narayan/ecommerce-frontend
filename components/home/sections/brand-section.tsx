@@ -2,6 +2,7 @@ import { Brand } from '@/app/dashboard/brands/brand.type'
 import { getApi } from '@/lib/api'
 import { mediaUrlGenerator } from '@/lib/utils'
 import Image from 'next/image'
+import { redirect } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
 const BrandSection = () => {
@@ -28,6 +29,7 @@ const BrandSection = () => {
                 <div className="flex gap-5 justify-center flex-wrap md:gap-8 lg:gap-x-16 ">
                     {brands.map((brand, index) => (
                         <div
+                            onClick={() => redirect(`/shop?brand=${brand.id}`)}
                             key={index}
                             className="flex items-center justify-center rounded-lg cursor-pointer"
                         >

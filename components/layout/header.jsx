@@ -9,14 +9,19 @@ import { CartSheet } from "../cart/cart-sheet"
 import { redirect, usePathname } from "next/navigation"
 import { noHeaderFooterRoutes } from "@/lib/constants"
 import { useGlobal } from "@/contexts/global-context"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export function Header() {
   const path = usePathname()
   const { publicInfo, loading } = useGlobal()
   const [search, setSearch] = useState("")
+  const [open, setOpen] = useState(false)
   const hideHeaderFooter = noHeaderFooterRoutes.some((route) => path.startsWith(route))
   if (hideHeaderFooter) return null
+
+  useEffect(() => {
+    setOpen(false)
+  }, [path])
 
   if (loading) return <header>
     <div className="w-full h-full flex items-center justify-center">
@@ -56,7 +61,7 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-2">
           {/* Mobile Menu */}
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
                 <Menu className="h-6 w-6" />
@@ -66,7 +71,7 @@ export function Header() {
               <SheetTitle>
                 <span className="font-medium">{publicInfo?.store_name || ""}</span>
               </SheetTitle>
-              <MobileNavigation />
+              <MobileNavigation setOpen={setOpen} />
             </SheetContent>
           </Sheet>
 
@@ -141,7 +146,8 @@ export function Header() {
   )
 }
 
-function MobileNavigation() {
+function MobileNavigation({ setOpen }) {
+
   return (
     <nav className="flex flex-col space-y-4 mt-8">
       <Link href="/shop" className="text-lg font-medium hover:text-gray-600">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { Product } from "@/app/dashboard/products/product.type"
-import ProductCard from "@/components/product-card"
+import ProductCard from "@/components/cards/product-card"
 import { productStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Heart, ShoppingBag, ArrowLeft } from "lucide-react"

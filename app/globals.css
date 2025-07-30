@@ -125,6 +125,22 @@
   @apply text-lg font-medium
 }
 
+#nprogress .bar {
+  background: #ffafaf !important;  /* 💡 Replace with your custom color */
+  height: 4px;           /* 💡 Adjust thickness (default is 2px) */
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE and Edge */
+  overflow: auto;                /* Ensure scrolling still works */
+}
+
+/* For WebKit browsers (Chrome, Safari) */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -1,13 +1,11 @@
-
-import { getUser } from '@/lib/auth';
+"use server"
+import { getUser, logout } from '@/lib/auth';
 import { redirect } from "next/navigation"
 import DashboardSidebar from './components/SideBar';
-
 export default async function DashboardLayout({ children, }: { children: React.ReactNode }) {
 
   const user = await getUser()
-
-  if (!user) {
+  if (!user || user.role.type !== "admin") {
     redirect("/auth")
   }
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAuth } from '@/contexts/auth-context'
 import { login } from '@/lib/auth'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import Link from 'next/link'
@@ -16,7 +17,7 @@ const LoginForm = () => {
     const router = useRouter()
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-
+    const { setUser } = useAuth()
     async function handleSubmit(formData: FormData) {
         setIsLoading(true)
 
@@ -26,6 +27,7 @@ const LoginForm = () => {
             const result = await login({ email, password })
 
             if (result.success && result.user?.user.role.type === "admin") {
+                setUser(result.user.user)
                 router.push("/dashboard")
             } else {
                 toast.error("Login failed")

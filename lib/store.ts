@@ -1,5 +1,8 @@
+
 export const productStore = {
+
     addToLikes: (productId: number) => {
+        if (typeof window === 'undefined') return;
         const likedProducts = JSON.parse(localStorage.getItem('likedProducts') || '[]')
         if (!likedProducts.includes(productId) && productId > 0) {
             likedProducts.push(productId)
@@ -7,6 +10,7 @@ export const productStore = {
         }
     },
     removeFromLikes: (productId: number) => {
+        if (typeof window === 'undefined') return;
         const likedProducts = JSON.parse(localStorage.getItem('likedProducts') || '[]')
         const index = likedProducts.indexOf(productId)
         if (index > -1) {
@@ -15,11 +19,13 @@ export const productStore = {
         }
     },
     isProductAddedToLikes: (productId: number) => {
+        if (typeof window === 'undefined') return;
         const likedProducts = JSON.parse(localStorage.getItem('likedProducts') || '[]')
         return likedProducts.includes(productId)
     },
     getLikedProducts: () => {
-        return JSON.parse(localStorage.getItem('likedProducts') || '[]')
+        if (typeof window === 'undefined') return;
+        return JSON.parse(localStorage && localStorage.getItem('likedProducts') || '[]')
     }
 
 }

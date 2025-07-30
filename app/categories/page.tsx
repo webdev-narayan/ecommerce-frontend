@@ -124,7 +124,7 @@ export default function CategoriesPage() {
                         </div>
                         <div className="lg:p-6 p-2">
                           <h3 className="text-xl font-semibold text-gray-900 mb-2">{category.name}</h3>
-                          <p className="text-gray-600 mb-4 text-sm hidden md:block leading-relaxed">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eveniet, similique?</p>
+                          <p className="text-gray-600 mb-4 text-sm hidden md:block line-clamp-3">{category.description}</p>
                           <div className="flex items-center justify-end w-full">
                             {/* <span className="text-sm text-gray-500">{10}</span> */}
                             <Button variant="outline" className="w-full md:w-fit" onClick={() => redirect(`/shop?category=${category.id}`)} size="sm">

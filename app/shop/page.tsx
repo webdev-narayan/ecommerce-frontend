@@ -18,7 +18,7 @@ import { Category } from "../dashboard/categories/categories.type"
 import { VariantAttribute } from "../dashboard/products/attributes/attribute.type"
 import FilterSection from "./components/FilterSection"
 import { LoadingShoppingCart } from "@/components/loaders"
-import ProductCard from "@/components/product-card"
+import ProductCard from "@/components/cards/product-card"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ImageCarousel } from "@/components/image-carousel"
 import React from "react"
@@ -54,6 +54,8 @@ export default function ShopPage() {
     query.append("populate[2]", "thumbnail");
     query.append("populate[3]", "gallery");
     query.append("populate[4]", "product_variants");
+    query.append("populate[5]", "reel");
+    query.append("populate[6]", "reel.video");
 
     if (selectedCategories.length > 0) {
       selectedCategories.map((category: number, index) => {

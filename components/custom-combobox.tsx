@@ -9,9 +9,35 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
+interface Option {
+    value: string;
+    label: string;
+}
+
+interface ComboboxProps {
+    options: Option[];
+    value: string;
+}
+
+interface CustomComboboxProps {
+    onSearch?: (query: string) => Promise<Option[]>;
+    options?: Option[];
+    value: string;
+    onValueChange: (value: string) => void;
+    onAddClick?: () => void;
+    placeholder?: string;
+    searchPlaceholder?: string;
+    emptyText?: string;
+    addButtonText?: string;
+    className?: string;
+    debounceMs?: number;
+    minSearchLength?: number;
+    enableServerSearch?: boolean;
+}
+
 // Custom hook for debouncing
-function useDebounce(value, delay) {
-    const [debouncedValue, setDebouncedValue] = React.useState(value)
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = React.useState<T>(value)
 
     React.useEffect(() => {
         const handler = setTimeout(() => {
@@ -40,15 +66,15 @@ export function CustomCombobox({
     debounceMs = 300,
     minSearchLength = 1,
     enableServerSearch = false,
-}) {
-    const [open, setOpen] = React.useState(false)
-    const [searchQuery, setSearchQuery] = React.useState("")
-    const [serverOptions, setServerOptions] = React.useState([])
-    const [isLoading, setIsLoading] = React.useState(false)
-    const [error, setError] = React.useState(null)
+}: CustomComboboxProps) {
+    const [open, setOpen] = React.useState<boolean>(false)
+    const [searchQuery, setSearchQuery] = React.useState<string>("")
+    const [serverOptions, setServerOptions] = React.useState<Option[]>([])
+    const [isLoading, setIsLoading] = React.useState<boolean>(false)
+    const [error, setError] = React.useState<string | null>(null)
 
     // Debounce search query
-    const debouncedSearchQuery = useDebounce(searchQuery, debounceMs)
+    const debouncedSearchQuery = useDebounce<string>(searchQuery, debounceMs)
 
     // Determine which options to use
     const currentOptions = enableServerSearch ? serverOptions : options
@@ -59,10 +85,10 @@ export function CustomCombobox({
         if (!enableServerSearch || !onSearch) return
 
         if (searchQuery.length < minSearchLength) {
-            // setServerOptions([])
             setServerOptions(options)
             return
         }
+
         const performSearch = async () => {
             setIsLoading(true)
             setError(null)
@@ -70,7 +96,8 @@ export function CustomCombobox({
                 const results = await onSearch(debouncedSearchQuery)
                 setServerOptions(results || [])
             } catch (err) {
-                setError(err.message || "Failed to fetch options")
+                const errorMessage = err instanceof Error ? err.message : "Failed to fetch options"
+                setError(errorMessage)
                 setServerOptions([])
             } finally {
                 setIsLoading(false)
@@ -78,15 +105,15 @@ export function CustomCombobox({
         }
 
         performSearch()
-    }, [debouncedSearchQuery, onSearch, enableServerSearch, minSearchLength])
+    }, [debouncedSearchQuery, onSearch, enableServerSearch, minSearchLength, options])
 
     // Handle search input change
-    const handleSearchChange = (value) => {
+    const handleSearchChange = (value: string) => {
         setSearchQuery(value)
     }
 
     // Reset search when popover closes
-    const handleOpenChange = (newOpen) => {
+    const handleOpenChange = (newOpen: boolean) => {
         setOpen(newOpen)
         if (!newOpen) {
             setSearchQuery("")
@@ -101,7 +128,7 @@ export function CustomCombobox({
         if (searchQuery.length < minSearchLength) {
             setServerOptions(options)
         }
-    }, [searchQuery])
+    }, [searchQuery, minSearchLength, options])
 
     return (
         <div className="flex gap-2">
@@ -149,7 +176,7 @@ export function CustomCombobox({
                                         <CommandItem
                                             key={option.value}
                                             value={option.value}
-                                            onSelect={(currentValue) => {
+                                            onSelect={(currentValue: string) => {
                                                 onValueChange(currentValue === value ? "" : currentValue)
                                                 setOpen(false)
                                             }}
@@ -165,9 +192,11 @@ export function CustomCombobox({
                 </PopoverContent>
             </Popover>
 
-            <Button variant="outline" size="icon" onClick={onAddClick} type="button">
-                <Plus className="h-4 w-4" />
-            </Button>
+            {onAddClick && (
+                <Button variant="outline" size="icon" onClick={onAddClick} type="button">
+                    <Plus className="h-4 w-4" />
+                </Button>
+            )}
         </div>
     )
 }

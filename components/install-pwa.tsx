@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { X } from "lucide-react";
+import Cookies from "js-cookie";
 
 export default function InstallPwaPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-    const [showPrompt, setShowPrompt] = useState(false);
+    const [showPrompt, setShowPrompt] = useState(Cookies.get("pwa_prompt") === "true" ? true : false);
 
     useEffect(() => {
         const handleBeforeInstallPrompt = (e: Event) => {
@@ -17,7 +18,6 @@ export default function InstallPwaPrompt() {
         };
 
         const handleAppInstalled = () => {
-            console.log("PWA installed successfully");
             setShowPrompt(false);
         };
 
@@ -48,6 +48,11 @@ export default function InstallPwaPrompt() {
 
     if (!showPrompt) return null;
 
+    const handleClose = () => {
+        Cookies.set("pwa_prompt", "false", { expires: 10 })
+        setShowPrompt(false)
+    }
+
     return (
         <div className="fixed bottom-6 right-6 z-50">
             <Card className="shadow-2xl rounded-2xl w-72 relative">
@@ -64,7 +69,7 @@ export default function InstallPwaPrompt() {
                         </Button>
                     </div>
                 </CardContent>
-                <X onClick={() => setShowPrompt(false)} className="absolute top-5 right-5 bg-gray-200 rounded" />
+                <X onClick={handleClose} className="absolute top-5 right-5 bg-gray-200 rounded" />
             </Card>
         </div>
     );

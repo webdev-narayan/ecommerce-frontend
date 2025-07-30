@@ -3,6 +3,7 @@ import { Category } from "@/app/dashboard/categories/categories.type";
 import { VariantOption } from "./attributes/attribute.type";
 import { Brand } from "../brands/brand.type";
 import { User } from "@/lib/types/auth";
+import { Reel } from "../reels/reel.type";
 
 export interface Product {
     id: number;
@@ -25,6 +26,7 @@ export interface Product {
     product_variants: ProductVariant[];
     review_count?: number;
     reviews?: Review[]
+    reel?: Reel
 }
 
 export interface Review {

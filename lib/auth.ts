@@ -38,12 +38,8 @@ export async function logout() {
 }
 
 export async function getUser(): Promise<User | null> {
-  const cookieStore = await cookies();
 
   const config = await getHeaders({ token: true })
-  // if (!cookieStore.get("auth-token")?.value) {
-  //   return null
-  // }
   if (!config.headers?.Authorization) {
     console.log("no me api auth found")
     return null

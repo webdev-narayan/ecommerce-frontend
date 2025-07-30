@@ -20,7 +20,7 @@ export function Footer() {
   if (hideHeaderFooter) return null
 
   if (loading) {
-    return "loading"
+    return null
   }
 
   return (

@@ -1,15 +1,16 @@
 import { Product } from '@/app/dashboard/products/product.type'
 import React, { useState } from 'react'
-import { Card, CardContent } from './ui/card'
+import { Card, CardContent } from '../ui/card'
 import Link from 'next/link'
 import Image from 'next/image'
 import { mediaUrlGenerator } from '@/lib/utils'
-import { Button } from './ui/button'
+import { Button } from '../ui/button'
 import { Heart, ShoppingCart, Star } from 'lucide-react'
-import { Badge } from './ui/badge'
+import { Badge } from '../ui/badge'
 import { useCart } from '@/lib/cart-context'
 import { toast } from 'sonner'
 import { productStore } from '@/lib/store'
+import VideoPlayer from '../video-player'
 
 interface ProductCardProps {
     product: Product;
@@ -43,13 +44,14 @@ const ProductCard = ({ product, showAddToCart,
             <CardContent className="p-0">
 
                 <div className="relative overflow-hidden rounded-t-lg aspect-square">
-                    <Link href={`/product/${product.slug}`}>
+                    <Link href={`/product/${product.slug}`} className=''>
+                        <VideoPlayer url={product.reel?.video?.url} className='hidden group-hover:block transition-opacity duration-200' />
                         <Image
                             src={mediaUrlGenerator(product?.thumbnail?.url)}
                             alt={product.title}
                             width={300}
                             height={250}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className={`w-full h-full object-cover ${product.reel?.video.url ? "group-hover:hidden" : "group-hover:scale-110"} transition-all duration-300`}
                         />
                     </Link>
                     {product.stock && <Badge className="absolute top-2 left-2 bg-red-500 ">Sale</Badge>}
@@ -67,7 +69,7 @@ const ProductCard = ({ product, showAddToCart,
                 <div className="p-4 flex flex-col gap-1">
                     <div className="">
                         <Link href={`/product/${product.slug}`}>
-                            <h3 className="font-semibold text-gray-900 hover:text-gray-700 md:line-clamp-2 line-clamp-1 md:text-base text-xs">{product.title}</h3>
+                            <h3 className="font-semibold text-gray-900 hover:text-gray-700 line-clamp-1 md:text-base text-xs">{product.title}</h3>
                         </Link>
                     </div>
 

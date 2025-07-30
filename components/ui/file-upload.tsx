@@ -23,7 +23,7 @@ interface FileUploadProps {
 export default function FileUpload({
     onFilesChange,
     maxFiles = 5,
-    acceptedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"],
+    acceptedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4"],
     maxFileSize = 5,
     isMultiple = false,
     title = "Upload file",
