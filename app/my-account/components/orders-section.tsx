@@ -122,6 +122,9 @@ export function OrdersSection() {
 
   const loadOrders = async () => {
     try {
+      if (!user) {
+        return
+      }
       setLoading(true)
       const query = new URLSearchParams();
       if (debouncedSearchedQuery.trim()) query.append("search", debouncedSearchedQuery)
