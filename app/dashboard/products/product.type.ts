@@ -27,6 +27,10 @@ export interface Product {
     review_count?: number;
     reviews?: Review[]
     reel?: Reel
+    review_meta: {
+        count: number,
+        rating: number
+    }
 }
 
 export interface Review {

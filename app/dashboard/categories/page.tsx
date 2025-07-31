@@ -161,6 +161,7 @@ export default function CategoriesPage() {
                     return category
                 }))
                 setIsCategoryFormOpen(false)
+                setIsEditing(false)
             }
 
         } else {

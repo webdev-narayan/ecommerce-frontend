@@ -16,6 +16,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
                 (item) => item.id === action.payload.id && item.selected_variant.id === action.payload.selected_variant.id
             );
 
+            console.log(action.payload)
             if (existingItem) {
                 return {
                     ...state,

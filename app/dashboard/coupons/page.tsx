@@ -126,6 +126,7 @@ export default function CouponsPage() {
                     return coupon
                 }))
                 setIsCouponFormOpen(false)
+                setIsEditing(false)
             }
 
         } else {

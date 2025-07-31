@@ -158,6 +158,7 @@ export default function BannersPage() {
           return banner
         }))
         setIsBannerFormOpen(false)
+        setIsEditing(false)
       }
 
     } else {

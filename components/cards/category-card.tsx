@@ -16,8 +16,8 @@ const CategoryCard = ({ category }: { category: Category }) => {
                 className='w-full h-full object-cover'
                 src={mediaUrlGenerator(category.thumbnail?.url)}
             />
-            <div className='absolute bg-gradient-to-t from-black/40 to-transparent bottom-0 w-full h-[50%]'></div>
-            <span className='absolute bottom-4 left-4 text-white text-2xl font-semibold max-w-[60%]'>{category.name}</span>
+            <div className='absolute bg-gradient-to-t from-black/60 to-transparent bottom-0 w-full h-[70%]'></div>
+            <span className='absolute bottom-4 left-4 text-white lg:text-2xl text-lg font-semibold max-w-[60%]'>{category.name}</span>
             {/* <ArrowRight className='absolute bottom-4 right-4 text-white w-8 h-8' /> */}
         </div>
     )

@@ -132,6 +132,7 @@ export default function BrandsPage() {
                     return brand
                 }))
                 setIsBrandFormOpen(false)
+                setIsEditing(false)
             }
 
         } else {

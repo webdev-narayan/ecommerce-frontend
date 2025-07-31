@@ -7,5 +7,8 @@ export interface Brand {
     thumbnail?: Media;
     createdAt: string;
     updatedAt: string;
-    productsCount?: number
+    products?: {
+        count:
+        number
+    }
 }

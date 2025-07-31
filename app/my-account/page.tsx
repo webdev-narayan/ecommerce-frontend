@@ -38,7 +38,7 @@ export default function CustomerDashboard() {
                 </div>
                 : <>
                     <div className="w-full max-w-7xl mx-auto mt-10 mb-10 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="flex flex-col md:flex-row min-h-[400px] md:h-[600px]">
+                        <div className="flex flex-col md:flex-row min-h-[400px] md:h-[700px]">
                             <DashboardSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
                             <main className="flex-1 overflow-y-auto">
                                 <div className="p-4 sm:p-6">{renderContent()}</div>

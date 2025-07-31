@@ -1,4 +1,4 @@
-import { Archive, BarChart3, Book, Box, Home, ImageIcon, LayoutGrid, List, Package, Plus, Settings, ShoppingBag, Tag, TicketPercent, Video } from "lucide-react";
+import { Archive, BarChart3, Book, Box, Home, ImageIcon, LayoutGrid, List, Package, PenBox, Plus, Settings, ShoppingBag, Tag, TicketPercent, Video } from "lucide-react";
 
 export const navigationLinks = [
   {
@@ -63,6 +63,11 @@ export const navigationLinks = [
     name: "Orders",
     href: "/dashboard/orders",
     icon: ShoppingBag
+  },
+  {
+    name: "Reviews",
+    href: "/dashboard/reviews",
+    icon: PenBox
   },
   {
     name: "Pages",

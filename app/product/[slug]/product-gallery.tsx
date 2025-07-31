@@ -17,7 +17,6 @@ export default function ProductGallery({
     gallery,
     productTitle = "Product",
 }: ProductGalleryProps) {
-    console.log(gallery)
     const [selectedImageIndex, setSelectedImageIndex] = useState(0)
     const [loadingStates, setLoadingStates] = useState<Record<number, boolean>>({})
 

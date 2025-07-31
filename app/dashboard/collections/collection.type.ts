@@ -13,5 +13,8 @@ export interface Collection {
     endDate: string
     createdAt: string
     updatedAt: string
-    productsCount?: number
+    products?: {
+        count:
+        number
+    }
 }

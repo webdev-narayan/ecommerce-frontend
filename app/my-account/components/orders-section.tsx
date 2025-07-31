@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/utils"
+import { cn, mediaUrlGenerator } from "@/lib/utils"
 
 import { useState, useEffect } from "react"
 import {
@@ -14,16 +14,30 @@ import {
   Clock,
   ShoppingBag,
   Package,
+  Phone,
+  MapPin,
+  User,
+  Coins,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getApi } from "@/lib/api"
+import { getApi, postApi } from "@/lib/api"
 import { useAuth } from "@/contexts/auth-context"
 import moment from "moment"
 import { Order, OrderStatus } from "@/app/dashboard/orders/Order.type"
 import OrderViewModal from "./order-modal"
+import Image from "next/image"
+import ReviewModal from "./review-modal"
+import { Product } from "@/app/dashboard/products/product.type"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import StarRating from "@/components/ui/star-rating"
+import { CreateReview } from "@/app/dashboard/reviews/review.type"
+import { Button } from "@/components/ui/button"
+import toast from "react-hot-toast"
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -36,7 +50,7 @@ const getStatusColor = (status: string) => {
     case "CANCELLED":
       return "bg-red-50 text-red-700 border-red-200"
     case "NEW":
-      return "bg-slate-50 text-slate-700 border-slate-200"
+      return "bg-orange-50 text-orange-700 border-orange-200"
     default:
       return "bg-slate-50 text-slate-700 border-slate-200"
   }
@@ -72,13 +86,25 @@ const getStatusIcon = (status: string) => {
   }
 }
 
+
+
 export function OrdersSection() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [orderStatus, setOrderStatus] = useState("all")
   const [debouncedSearchedQuery, setDebouncedSearchedQuery] = useState("")
+
+  const [reviewModal, setReviewModal] = useState(false)
+  const [reviewProduct, setReviewProduct] = useState<Product | undefined>(undefined)
   const { user } = useAuth()
+  const [reviewForm, setReviewForm] = useState<CreateReview>({
+    comment: "",
+    product: undefined,
+    rating: 1,
+    user: undefined,
+    images: null
+  })
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -111,6 +137,29 @@ export function OrdersSection() {
       setLoading(false)
     }
   }
+
+  const submitReview = async () => {
+    const res = await postApi("/reviews", { data: reviewForm }, true)
+    if (res.success) {
+      setReviewModal(false)
+      setReviewProduct(undefined);
+      toast.success("Reviews Added Succeessfuly")
+    } else {
+      toast.error("Error occured")
+    }
+  }
+
+  useEffect(() => {
+    if (reviewProduct && user) {
+      setReviewForm({
+        comment: "",
+        product: reviewProduct?.id,
+        rating: 4,
+        user: user?.id,
+        images: null
+      })
+    }
+  }, [reviewProduct, user])
 
   if (loading) {
     return (
@@ -174,136 +223,125 @@ export function OrdersSection() {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <Card key={order.order_id} className="border-slate-200 hover:shadow-sm transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <CardTitle className="text-lg font-medium text-slate-900 truncate">{order.order_id}</CardTitle>
-                    <CardDescription className="text-slate-500">
+            <Card key={order.order_id} className="border-slate-200 hover:shadow-sm transition-shadow rounded-xl">
+              <div className="flex md:flex-row flex-col p-2 gap-4">
+
+                {/* image */}
+
+                <div className={`md:w-[160px] md:h-[160px] h-[60px] flex md:grid gap-2 ${order.order_products.length === 1 ? "" : order.order_products.length === 2 ? "grid-rows-1 grid-cols-2" : "grid-rows-2 grid-cols-2"}`}>
+                  {order.order_products.slice(0, 4).map((item, index) => {
+                    return <div key={item.id} className="relative">
+                      <Image
+                        key={item.id}
+                        width={100}
+                        height={100}
+                        alt="order iamge"
+                        className="rounded-md w-full h-full aspect-square object-cover object-left-top"
+                        src={mediaUrlGenerator(item.product_variant.thumbnail?.url || item.product.thumbnail?.url)}
+                      />
+                      {
+                        index === 3 && order.order_products.length > 4 &&
+                        <div className={`absolute inset-0 bg-black/50 rounded-md grid place-items-center text-white text-3xl`}>
+                          +{order.order_products.length - 3}
+                        </div>
+                      }
+                    </div>
+                  })}
+                </div>
+
+                <div className="flex-1 flex flex-col gap-y-4 md:gap-y-2 justify-between text-gray-800">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="md:text-lg font-medium">{order.order_id}</h4>
+                      <Badge className={cn("border w-fit text-xs flex items-center gap-1 py-1", getStatusColor(order.order_status))}>
+                        {getStatusIcon(order.order_status)}
+                        {order.order_status}
+                      </Badge>
+                    </div>
+
+                    <div className="flex gap-x-4 items-center flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <Coins className="size-4" />
+                        <Badge className={cn("border text-xs", getPaymentStatusColor(order.payment_status))}>
+                          {order.payment_status}
+                        </Badge>
+                      </span>
+                      <h4 className="font-semibold text-slate-900 md:text-2xl">₹ {order.total_amount.toFixed(2)}</h4>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+                    <span className="flex text-sm md:text-base items-center gap-2"> <User className="size-4" /> {order.user.name || order.user.username}</span>
+                    <span className="flex text-sm md:text-base items-center gap-2"> <Phone className="size-4" /> {order.user.phone || order.user.username}</span>
+                    <span className="flex text-sm md:text-base items-center gap-2"> <MapPin className="size-4" /> {order.shipping_address.city}, {order.shipping_address.state},{order.shipping_address.pincode} </span>
+                  </div>
+
+                  <div className="flex gap-4 items-center md:justify-start justify-between">
+                    <span className="flex items-center gap-1 text-sm md:text-base">
+                      <CreditCard className="md:size-5 size-4" />
+                      {order.payment_method}
+                    </span>
+
+                    <span className="flex items-center gap-1 text-sm md:text-base">
+                      <Calendar className="size-5" />
+                      Delivery: {order.deliver_date?.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) || "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="flex md:items-center justify-between flex-col md:flex-row items-start gap-2">
+                    <p className="text-slate-500">
                       Ordered on{" "}
                       {moment(order.order_date).format("DD/MM/YYYY HH:mm A")}
-                    </CardDescription>
+                    </p>
+                    <OrderViewModal setReviewOpen={setReviewModal} setReviewProduct={setReviewProduct} orderData={order} />
                   </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <Badge className={cn("border w-fit", getStatusColor(order.order_status))}>
-                      {getStatusIcon(order.order_status)}
-                      {order.order_status}
-                    </Badge>
-                    {/* <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-slate-200 bg-transparent w-full sm:w-auto"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          View Details
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Order Details - {order.order_id}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm font-medium text-slate-700 mb-1">Order Status</p>
-                              <Badge className={cn("border", getStatusColor(order.order_status))}>
-                                {getStatusIcon(order.order_status)}
-                                {order.order_status}
-                              </Badge>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-slate-700 mb-1">Payment Status</p>
-                              <Badge className={cn("border", getPaymentStatusColor(order.payment_status))}>
-                                {order.payment_status}
-                              </Badge>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-slate-700 mb-1">Payment Method</p>
-                              <p className="text-sm text-slate-600">{order.payment_method}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-slate-700 mb-1">Total Amount</p>
-                              <p className="text-sm font-semibold text-slate-900">₹{order.total_amount.toFixed(2)}</p>
-                            </div>
-                          </div>
-                          <Separator />
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-3">Order Items</p>
-                            <div className="space-y-3">
-                              {order.order_products.map((item) => (
-                                <div
-                                  key={item.id}
-                                  className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg"
-                                >
-                                  <Image
-                                    src={item.product.thumbnail?.url || "/placeholder.svg"}
-                                    alt={item.product.thumbnail?.alt || "Product"}
-                                    width={60}
-                                    height={60}
-                                    className="rounded-md object-cover border border-slate-200"
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-slate-900 truncate">{item.product.title}</p>
-                                    <p className="text-sm text-slate-500">
-                                      Quantity: {item.quantity} × ₹{item.price.toFixed(2)}
-                                    </p>
-                                  </div>
-                                  <p className="font-semibold text-slate-900">₹{item.total_amount.toFixed(2)}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <Separator />
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-2">Shipping Address</p>
-                            <div className="text-sm text-slate-600 space-y-1">
-                              <p className="font-medium">{order.shipping_address.name}</p>
-                              <p>
-                                {order.shipping_address.line1}
-                                {order.shipping_address.line2 && `, ${order.shipping_address.line2}`}
-                              </p>
-                              <p>
-                                {order.shipping_address.city}, {order.shipping_address.state} -{" "}
-                                {order.shipping_address.pincode}
-                              </p>
-                              <p>{order.shipping_address.phone}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog> */}
-                    <OrderViewModal orderData={order} />
-                  </div>
+
                 </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 text-sm text-slate-600">
-                    <div className="flex items-center gap-1">
-                      <CreditCard className="h-3 w-3" />
-                      <span>{order.payment_method}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span className="truncate">
-                        Delivery: {order.deliver_date?.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-start">
-                    <p className="font-semibold text-slate-900">₹{order.total_amount.toFixed(2)}</p>
-                    <Badge className={cn("border text-xs", getPaymentStatusColor(order.payment_status))}>
-                      {order.payment_status}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
+              </div>
             </Card>
           ))}
         </div>
       )}
+
+      {
+        reviewProduct &&
+        <Dialog open={reviewModal} onOpenChange={setReviewModal}>
+          {/* <DialogTrigger className='hidden'>
+
+          </DialogTrigger> */}
+          <DialogContent className="min-w-2xl">
+            <DialogTitle>
+              Write a Product Review
+            </DialogTitle>
+            <div className="space-y-2">
+
+              <div className="">
+                <Label>Product</Label>
+                <p>
+                  {reviewProduct.title}
+                </p>
+              </div>
+
+              <div>
+                <Label>Rating</Label>
+                <StarRating initialRating={reviewForm.rating} onRatingChange={(value) => setReviewForm(prev => ({ ...prev, rating: value }))} />
+              </div>
+              <div>
+                <Label>Comment</Label>
+                <Textarea value={reviewForm.comment} onChange={(value) => setReviewForm(prev => ({ ...prev, comment: value.target.value }))}></Textarea>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={submitReview} className="">Submit</Button>
+              </div>
+            </div>
+
+
+
+          </DialogContent>
+        </Dialog>
+      }
+
     </div>
   )
 }

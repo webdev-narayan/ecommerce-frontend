@@ -38,11 +38,12 @@ export function CheckoutFlow({ onSuccess, onBack, handleClose }: CheckoutFlowPro
 
     const handlePlaceOrder = async (): Promise<CreateOrderType | null> => {
         setIsProcessing(true)
+        console.log(items)
         const payload: CheckoutPayload = {
             address_id: Number(selectedAddress),
             product_variants: items.map((item) => {
                 return {
-                    id: item.id,
+                    id: item.selected_variant.id,
                     quantity: item.cart_quantity,
                 }
             }),

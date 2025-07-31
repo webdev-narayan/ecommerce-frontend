@@ -130,7 +130,7 @@ export default function CollectionsPage() {
                           </div>
                           <p className="text-gray-600 mb-4 text-sm leading-relaxed">{collection.description}</p>
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-500">Products {100}</span>
+                            <span className="text-sm text-gray-500">Products {collection.products?.count}</span>
                             <Button
                               onClick={() => {
                                 redirect(`/collections/${collection.documentId}`)

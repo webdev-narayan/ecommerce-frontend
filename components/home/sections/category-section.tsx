@@ -79,7 +79,7 @@ const CategorySection = () => {
                                 </Card>
                             ))}
                 </div> */}
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-3">
                     {
                         loading ? [...Array(4)].map((item, index) => {
                             return <SkeletonComp key={index} />

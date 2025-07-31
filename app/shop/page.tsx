@@ -49,46 +49,39 @@ export default function ShopPage() {
   const getProducts = async () => {
     setIsLoading(true)
     const query = new URLSearchParams();
-    query.append("populate[0]", "brand");
-    query.append("populate[1]", "category");
-    query.append("populate[2]", "thumbnail");
-    query.append("populate[3]", "gallery");
-    query.append("populate[4]", "product_variants");
-    query.append("populate[5]", "reel");
-    query.append("populate[6]", "reel.video");
 
     if (selectedCategories.length > 0) {
       selectedCategories.map((category: number, index) => {
-        query.append(`filters[$and][0][category][id][$in][${index}]`, category.toString())
+        query.append(`category`, category.toString())
       })
     }
 
     if (selectedBrands.length > 0) {
       selectedBrands.map((brand: number, index) => {
-        query.append(`filters[$and][1][brand][id][$in][${index}]`, brand.toString())
+        query.append(`brand`, brand.toString())
       })
     }
 
     if (selectedVariantOptions.length > 0) {
       selectedVariantOptions.map((variantOption: number, index) => {
-        query.append(`filters[$and][2][product_variants][variant_options][id][$in][${index}]`, variantOption.toString())
+        query.append(`variant_options`, variantOption.toString())
       })
     }
 
     if (debouncedSearchedQuery.trim()) {
-      query.append("filters[title][$containsi]", debouncedSearchedQuery);
+      query.append("search", debouncedSearchedQuery);
     }
 
     if (selectedCategories.length === 0 && searchParam.get('category') && !hasClearedFilters) {
-      query.append(`filters[category][id][$eq]`, searchParam.get('category') || "")
+      query.append(`category`, searchParam.get('category') || "")
     }
 
     if (selectedBrands.length === 0 && searchParam.get('brand') && !hasClearedFilters) {
-      query.append(`filters[brand][id][$eq]`, searchParam.get('brand') || "")
+      query.append(`brand`, searchParam.get('brand') || "")
     }
 
     if (!debouncedSearchedQuery.trim() && searchParam.get('search') && !hasClearedFilters) {
-      query.append("filters[title][$containsi]", searchParam.get('search') || "");
+      query.append("search", searchParam.get('search') || "");
     }
 
 

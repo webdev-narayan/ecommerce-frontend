@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge"
 import { productStore } from "@/lib/store"
 import React from "react"
 import ProductGallery from "./product-gallery"
+import { Review } from "@/app/dashboard/reviews/review.type"
 
 const md = new MarkdownIt({
   html: true,
@@ -48,6 +49,7 @@ export default function ProductPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const { addItem, getTotalItems } = useCart()
   const [product, setProduct] = useState<Product | null>(null)
+  const [reviews, setReviews] = useState<Review[]>([])
   const [selectedProductVariant, setSelectedProductVariant] = useState<ProductVariant | null>(null)
   const [gallery, setGallery] = useState<Media[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -91,9 +93,20 @@ export default function ProductPage() {
     setIsLoading(false)
   }
 
+  const getReviews = async () => {
+    const res = await getApi<{ data: Review[] }>(`/products/${product?.id}/reviews`, false)
+    setReviews(res.data?.data ?? [])
+  }
+
   useEffect(() => {
     getProductBySlug()
   }, [params.slug])
+
+  useEffect(() => {
+    if (product) {
+      getReviews()
+    }
+  }, [product])
 
   const handleQuantityChange = (change: number) => {
     const newQuantity = quantity + change
@@ -154,13 +167,13 @@ export default function ProductPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  {product.review_meta.count !== 0 && <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">4.5</span>
+                      <span className="font-medium">{product.review_meta.rating}</span>
                     </div>
-                    <span className="text-gray-600 text-sm">({14} reviews)</span>
-                  </div>
+                    <span className="text-gray-600 text-sm">({product.review_meta.count}) Reviews</span>
+                  </div>}
 
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-3">
@@ -281,7 +294,7 @@ export default function ProductPage() {
                         Details
                       </TabsTrigger>
                       <TabsTrigger value="reviews" className="text-xs md:text-sm">
-                        Reviews ({product.review_count})
+                        Reviews ({product.review_meta.count})
                       </TabsTrigger>
                       <TabsTrigger value="shipping" className="text-xs md:text-sm">
                         Shipping
@@ -304,8 +317,8 @@ export default function ProductPage() {
                     <TabsContent value="reviews" className="mt-6">
                       <Card className="shadow-none">
                         <CardContent className="p-4 md:p-2 divide-y space-y-2">
-                          {product?.reviews ? (
-                            product.reviews
+                          {reviews.length ? (
+                            reviews
                               .map((review, index) => (
                                 <div key={review.documentId} className="flex items-start space-x-4">
                                   {/* <Avatar size="small" src={mediaUrlGenerator(review.user.avatar)} /> */}

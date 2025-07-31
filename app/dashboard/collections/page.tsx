@@ -153,6 +153,7 @@ export default function CollectionsPage() {
                     return collection
                 }))
                 setIsCollectionFormOpen(false)
+                setIsEditing(false)
             }
 
         } else {

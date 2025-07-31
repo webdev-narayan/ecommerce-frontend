@@ -73,13 +73,16 @@ const ProductCard = ({ product, showAddToCart,
                         </Link>
                     </div>
 
+
                     <div className="flex justify-between">
                         <p className="text-sm text-gray-500">{product.brand?.name}</p>
-                        <div className="flex items-center">
-                            <Star className={`w-4 h-4 fill-yellow-400 text-yellow-400`}
-                            />
-                            <span className="text-sm text-gray-500 ml-2">{4.5}</span>
-                        </div>
+                        {product.review_meta.count !== 0 &&
+                            < div className="flex items-center">
+                                <Star className={`w-4 h-4 fill-yellow-400 text-yellow-400`}
+                                />
+                                <span className="text-sm text-gray-500 ml-2">{product.review_meta.rating} ({product.review_meta.count})</span>
+                            </div>
+                        }
                     </div>
 
                     <div className="flex md:flex-row flex-col md:items-center gap-y-2 justify-between">
@@ -97,7 +100,7 @@ const ProductCard = ({ product, showAddToCart,
 
                 </div>
             </CardContent>
-        </Card>
+        </Card >
     )
 }
 

@@ -10,14 +10,19 @@ import { CalendarDays, CreditCard, MapPin, Package, Phone, Mail, User, Tag, Copy
 import { Order } from "@/app/dashboard/orders/Order.type"
 import { mediaUrlGenerator } from "@/lib/utils"
 import moment from "moment"
+import ReviewModal from "./review-modal"
+import { Product } from "@/app/dashboard/products/product.type"
 
 
 
 interface OrderViewModalProps {
-    orderData: Order
+    orderData: Order,
+    setReviewProduct: any,
+    setReviewOpen: any
 }
 
-export default function OrderViewModal({ orderData }: OrderViewModalProps) {
+export default function OrderViewModal({ orderData, setReviewProduct,
+    setReviewOpen }: OrderViewModalProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     const formatDate = (dateString: string) => {
@@ -71,7 +76,7 @@ export default function OrderViewModal({ orderData }: OrderViewModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">View Order Details</Button>
+                <Button variant="outline" size={"sm"}>Order Details</Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -166,32 +171,35 @@ export default function OrderViewModal({ orderData }: OrderViewModalProps) {
                         <CardContent>
                             <div className="space-y-4">
                                 {orderData.order_products.map((item, index) => (
-                                    <div key={index} className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg">
-                                        <div className="flex-shrink-0">
+                                    <div key={index} className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg relative">
+                                        <div className="w-[10%] aspect-square overflow-hidden">
                                             <img
-                                                src={mediaUrlGenerator(item.product_variant?.thumbnail?.url) || "/placeholder.svg"}
+                                                src={mediaUrlGenerator(item.product_variant?.thumbnail?.url || item.product.thumbnail?.url) || "/placeholder.svg"}
                                                 alt={item.product.title}
-                                                className="w-20 h-20 object-cover rounded-md"
+                                                className="w-full h-full aspect-square object-cover rounded-md"
                                             />
                                         </div>
                                         <div className="flex-1 space-y-2">
-                                            <div>
+                                            <div className="space-y-1">
                                                 <h4 className="font-medium">{item.product.title}</h4>
-                                                <p className="text-sm text-muted-foreground">{item.product.description}</p>
-                                                {item.product_variant?.sku && (
-                                                    <p className="text-xs text-muted-foreground">SKU: {item.product_variant.sku}</p>
-                                                )}
 
-                                                {/* Product Variant Options */}
-                                                {item.product_variant?.variant_options && item.product_variant.variant_options.length > 0 && (
-                                                    <div className="flex flex-wrap gap-2 mt-2">
-                                                        {item.product_variant.variant_options.map((option, optionIndex) => (
-                                                            <Badge key={optionIndex} variant="secondary" className="text-xs">
-                                                                {option.variant_attribute.name}: {option.name}
-                                                            </Badge>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                <div className="flex items-center gap-2">
+
+                                                    {item.product_variant?.sku && (
+                                                        <p className="text-xs text-muted-foreground">SKU: {item.product_variant.sku}</p>
+                                                    )}
+
+                                                    {/* Product Variant Options */}
+                                                    {item.product_variant?.variant_options && item.product_variant.variant_options.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {item.product_variant.variant_options.map((option, optionIndex) => (
+                                                                <Badge key={optionIndex} variant="secondary" className="text-xs">
+                                                                    {option.variant_attribute.name}: {option.name}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                                 <div className="flex items-center gap-4 text-sm">
@@ -208,11 +216,23 @@ export default function OrderViewModal({ orderData }: OrderViewModalProps) {
                                                 <div className="font-medium">Total: {formatCurrency(item.total_amount)}</div>
                                             </div>
                                         </div>
+                                        {
+                                            orderData.order_status === "DELIVERED" && <Button
+                                                onClick={() => {
+                                                    setReviewProduct(item.product)
+                                                    setReviewOpen(true)
+                                                    setIsOpen(false)
+                                                }}
+                                                className="absolute right-4 top-4 bg-gray-800 hover:bg-gray-700 text-white text-xs" size={"sm"}>Write Review</Button>
+                                        }
+
                                     </div>
                                 ))}
                             </div>
                         </CardContent>
                     </Card>
+
+
 
                     {/* Payment & Pricing */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
